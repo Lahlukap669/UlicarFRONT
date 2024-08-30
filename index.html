@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa; /* Light grey background for contrast */
+        }
+        .container {
+            margin-top: 100px;
+            background-color: #007bff; /* Primary blue color */
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+        .btn-custom {
+            background-color: #28a745; /* Green color for buttons */
+            border: none;
+            color: white;
+            font-size: 18px;
+            padding: 15px 30px;
+            margin: 10px 0;
+            border-radius: 10px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        .btn-custom:hover {
+            background-color: #218838; /* Darker green on hover */
+        }
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container text-center">
+    <h1>Dobrodošli na Prijavno Stran!</h1>
+    <button onclick="navigateTo('igralci_login.html')" class="btn btn-custom">Prijava Igralci</button>
+    <button onclick="navigateTo('trenerji_login.html')" class="btn btn-custom">Prijava Trenerji</button>
+    <button onclick="navigateTo('igralci_registration.html')" class="btn btn-custom">Registracija Igralci</button>
+    <button onclick="navigateTo('trenerji_registration.html')" class="btn btn-custom">Registracija Trenerji</button>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Custom JS -->
+<script>
+    function navigateTo(page) {
+        window.location.href = page;
+    }
+</script>
+
+</body>
+</html>

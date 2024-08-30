@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prijava Trenerji</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 50px;
+            background-color: #007bff;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .btn-custom {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            font-size: 18px;
+            padding: 15px 30px;
+            margin: 10px 0;
+            border-radius: 10px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        .btn-back {
+            background-color: #6c757d;
+            border: none;
+            color: white;
+            font-size: 14px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-custom:hover {
+            background-color: #218838;
+        }
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group label {
+            color: white;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container text-center">
+    <button class="btn btn-back" onclick="goBack()">Nazaj</button>
+    <h1>Prijava Trenerji</h1>
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" class="form-control" id="email" placeholder="Vnesite vaš email" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Geslo:</label>
+            <input type="password" class="form-control" id="password" placeholder="Vnesite vaše geslo" required>
+        </div>
+        <button type="submit" class="btn btn-custom">Prijava</button>
+    </form>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Custom JS -->
+<script>
+    function goBack() {
+        window.location.href = 'index.html';
+    }
+
+    let trenerId = null;
+
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    // Send login request to the API
+    fetch('http://127.0.0.1:5000/login_trenerji', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: email,
+            password: password,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const trenerId = data.trener_id;
+            console.log('Logged in trener ID:', trenerId);
+            localStorage.setItem('trainerId', trenerId);
+
+            // Now fetch the trainer details
+            fetch(`http://127.0.0.1:5000/get_trener_by_id`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ trener_id: trenerId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Fetched trener data:', data);
+                if (data.success) {
+                    // Store the trainer details in local storage
+                    localStorage.setItem('trainerName', data.trener.ime);
+                    localStorage.setItem('trainerSurname', data.trener.priimek);
+                    localStorage.setItem('trainerEmail', data.trener.gmail);
+                    localStorage.setItem('trainerTel', data.trener.tel);
+
+                    alert('Prijava uspešna!');
+                    // Redirect to the trainer's dashboard
+                    window.location.href = 'trenerji_dashboard.html';
+                } else {
+                    alert('Napaka pri pridobivanju podatkov o trenerju.');
+                }
+            })
+            .catch(error => {
+                console.error('Napaka pri pridobivanju podatkov o trenerju:', error);
+                alert('Prišlo je do napake. Poskusite znova.');
+            });
+
+        } else {
+            alert('Neveljaven email ali geslo. Poskusite znova.');
+        }
+    })
+    .catch(error => {
+        console.error('Napaka:', error);
+        alert('Prišlo je do napake. Poskusite znova.');
+    });
+});
+</script>
+
+</body>
+</html>
