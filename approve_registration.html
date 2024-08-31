@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprejemanje Igralcev</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e0f7fa; /* Svetlo modra barva */
+            color: #00796b; /* Temno zelena za besedilo */
+        }
+        .navbar {
+            background-color: #00796b; /* Temno zelena za navbar */
+        }
+        .navbar a {
+            color: #ffffff !important; /* Bela za besedilo v navbarju */
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out; /* Animacija za hover */
+        }
+        .navbar a.active {
+            background-color: #ffffff !important;
+            color: #00796b !important;
+            border-radius: 5px;
+        }
+        .btn-approve {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-approve:hover {
+            background-color: #218838;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .table-container {
+            margin-top: 30px;
+        }
+        .navbar-text {
+            margin-right: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="trenerji_dashboard.html">Trenerji Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="sprejemanje_igralcev.html">Sprejemanje Igralcev</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="dodajanje_izzivov.html">Dodajanje Izzivov</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pregled_druge_izzivi.html">Pregled Drugi Izzivi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="dodajanje_meritev.html">Dodajanje Meritev</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="moji_igralci.html">Moji Igralci</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="lestvica.html">Lestvica</a>
+                    </li>
+                </ul>
+                <span class="navbar-text" id="trainerNameSurname" onclick="editProfile()">
+                    <!-- Ime in priimek trenerja bo tukaj -->
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Container for Pending Registrations -->
+    <div class="container">
+        <h3 class="text-center">Nesprejete Registracije Igralcev</h3>
+        <div class="table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Ime</th>
+                        <th>Priimek</th>
+                        <th>Username</th>
+                        <th>Telefon</th>
+                        <th>Kraj Kluba</th>
+                        <th>Selekcija</th>
+                        <th>Dejanje</th>
+                    </tr>
+                </thead>
+                <tbody id="registrationsList">
+                    <!-- Tukaj bodo prikazani igralci za odobritev -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchTrainerDetails();
+            fetchPendingRegistrations();
+        });
+
+        function fetchTrainerDetails() {
+            const trainerId = localStorage.getItem('trainerId');
+
+            if (trainerId) {
+                fetch(`http://127.0.0.1:5000/get_trener_by_id`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ trener_id: trainerId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const trainer = data.trener;
+                        const trainerNameSurname = document.getElementById('trainerNameSurname');
+                        trainerNameSurname.textContent = `${trainer.ime} ${trainer.priimek}`;
+                    }
+                })
+                .catch(error => console.error('Error fetching trainer details:', error));
+            } else {
+                console.error('Trainer ID not found');
+            }
+        }
+
+        function fetchPendingRegistrations() {
+            fetch('http://127.0.0.1:5000/get_all_registracije_no', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                const registrationsList = document.getElementById('registrationsList');
+                registrationsList.innerHTML = ''; // Clear previous registrations
+
+                if (data.registracije && data.registracije.length > 0) {
+                    data.registracije.forEach(registration => {
+                        if (registration.selekcija_id) {
+                            fetchSelectionDetails(registration, registrationsList);
+                        }
+                    });
+                }
+            })
+            .catch(error => console.error('Error fetching registrations:', error));
+        }
+
+        function fetchSelectionDetails(registration, registrationsList) {
+            fetch(`http://127.0.0.1:5000/get_selekcija_by_id`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ selekcija_id: registration.selekcija_id }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const selekcija = data.selekcija.selekcija;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${registration.ime}</td>
+                        <td>${registration.priimek}</td>
+                        <td>${registration.username}</td>
+                        <td>${registration.tel}</td>
+                        <td>${registration.kraj_kluba}</td>
+                        <td>${selekcija}</td>
+                        <td>
+                            <button class="btn btn-approve" onclick="approveRegistration(${registration.id})">Odobri</button>
+                        </td>
+                    `;
+                    registrationsList.appendChild(row);
+                }
+            })
+            .catch(error => console.error('Error fetching selection details:', error));
+        }
+
+        function approveRegistration(registrationId) {
+            fetch('http://127.0.0.1:5000/approve_registration', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ registracija_id: registrationId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Registracija uspešno odobrena!');
+                    fetchPendingRegistrations(); // Refresh the list after approval
+                } else {
+                    alert('Prišlo je do napake pri odobritvi registracije.');
+                }
+            })
+            .catch(error => console.error('Error approving registration:', error));
+        }
+
+        function editProfile() {
+            window.location.href = '/edit_profile.html'; // Example redirection
+        }
+    </script>
+</body>
+</html>
