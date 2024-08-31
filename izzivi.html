@@ -3,33 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Izzivi</title>
-    <!-- Bootstrap CSS -->
+    <title>Izzivi Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #e0f7fa; /* Svetlo modra barva */
-            color: #00796b; /* Temno zelena za besedilo */
+            background-color: #e0f7fa;
+            color: #00796b;
         }
         .navbar {
-            background-color: #00796b; /* Temno zelena za navbar */
+            background-color: #00796b;
         }
         .navbar a {
-            color: #ffffff !important; /* Bela za besedilo v navbarju */
-            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out; /* Animacija za hover */
+            color: #ffffff !important;
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
         }
-        .navbar a.active {
-            background-color: #ffffff !important;
+        .navbar a:hover {
             color: #00796b !important;
+            background-color: #ffffff !important;
             border-radius: 5px;
-        }
-        .btn-primary {
-            background-color: #00897b; /* Temno modra za gumbe */
-            border-color: #00897b;
-        }
-        .btn-primary:hover {
-            background-color: #00695c; /* Temnejša zelena ob hoverju */
-            border-color: #00695c;
         }
         .container {
             margin-top: 20px;
@@ -40,6 +31,27 @@
         .navbar-text {
             margin-right: 20px;
             cursor: pointer;
+        }
+        .btn-custom {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-custom:hover {
+            background-color: #218838;
+        }
+        .form-control, .card-title, .card-text {
+            width: 100%;
+        }
+        .navbar a.active {
+            background-color: #ffffff !important;
+            color: #00796b !important;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -54,13 +66,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="sprejemanje_igralcev.html">Sprejemanje Igralcev</a>
+                        <a class="nav-link" href="approve_registration.html">Sprejemanje Igralcev</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="izzivi.html">Izzivi</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="pregled_druge_izzivi.html">Pregled Drugi Izzivi</a>
+                        <a class="nav-link" href="#">Drugi Izzivi</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="moji_igralci.html">Moji Igralci</a>
@@ -76,17 +88,21 @@
         </div>
     </nav>
 
-    <!-- Container for Challenges -->
+    <!-- Main Content -->
     <div class="container">
-        <h3 class="text-center">Zadnjih 5 Izzivov za Izbrano Selekcijo</h3>
-        <div class="mb-3">
-            <label for="selekcijaSelect" class="form-label">Izberite Selekcijo:</label>
-            <select class="form-select" id="selekcijaSelect" onchange="fetchChallengesBySelection()">
-                <!-- Tukaj bodo prikazane selekcije -->
+        <h3 class="text-center">Izzivi po selekcijah</h3>
+
+        <!-- Dropdown to select Selekcija -->
+        <div class="form-group mb-4">
+            <label for="selekcijaSelect">Izberite Selekcijo:</label>
+            <select id="selekcijaSelect" class="form-control" onchange="fetchIzziviBySelekcijaId()">
+                <!-- Options will be dynamically populated -->
             </select>
         </div>
-        <div id="challengesList" class="card-container">
-            <!-- Tukaj bodo prikazani izzivi -->
+
+        <!-- List of Izzivi -->
+        <div id="izziviList" class="card-container">
+            <!-- Izzivi cards will be displayed here -->
         </div>
     </div>
 
@@ -95,15 +111,27 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            fetchTrainerDetails();
-            fetchSelections();
+            displayTrainerName();
+            fetchTrenerSelekcije();
         });
 
-        function fetchTrainerDetails() {
+        function displayTrainerName() {
+            const trainerName = localStorage.getItem('trainerName');
+            const trainerSurname = localStorage.getItem('trainerSurname');
+
+            if (trainerName && trainerSurname) {
+                const trainerNameSurname = document.getElementById('trainerNameSurname');
+                trainerNameSurname.textContent = `${trainerName} ${trainerSurname}`;
+            } else {
+                console.error('Trainer name or surname not found in local storage.');
+            }
+        }
+
+        function fetchTrenerSelekcije() {
             const trainerId = localStorage.getItem('trainerId');
 
             if (trainerId) {
-                fetch(`http://127.0.0.1:5000/get_trener_by_id`, {
+                fetch(`http://127.0.0.1:5000/get_trenerji_selekcije_by_trener_id`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -113,180 +141,130 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        const trainer = data.trener;
-                        const trainerNameSurname = document.getElementById('trainerNameSurname');
-                        trainerNameSurname.textContent = `${trainer.ime} ${trainer.priimek}`;
+                        const selekcijaSelect = document.getElementById('selekcijaSelect');
+                        selekcijaSelect.innerHTML = '';
+
+                        if (data.trenerji_selekcije && data.trenerji_selekcije.length > 0) {
+                            data.trenerji_selekcije.forEach(selekcija => {
+                                // Fetch Selekcija details by ID
+                                fetch(`http://127.0.0.1:5000/get_selekcija_by_id`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ selekcija_id: selekcija.selekcija_id }),
+                                })
+                                .then(response => response.json())
+                                .then(selekcijaData => {
+                                    if (selekcijaData.success) {
+                                        const option = document.createElement('option');
+                                        option.value = selekcijaData.selekcija.selekcije_id;
+                                        option.textContent = selekcijaData.selekcija.selekcija;
+                                        selekcijaSelect.appendChild(option);
+
+                                        // Fetch Izzivi for the first Selekcija by default
+                                        if (selekcijaSelect.options.length === 1) {
+                                            fetchIzziviBySelekcijaId();
+                                        }
+                                    }
+                                })
+                                .catch(error => console.error('Error fetching selekcija:', error));
+                            });
+                        } else {
+                            console.error('No selections found for the trainer.');
+                        }
+                    } else {
+                        console.error('Failed to fetch selections. Response:', data);
                     }
                 })
-                .catch(error => console.error('Error fetching trainer details:', error));
+                .catch(error => console.error('Error fetching trenerji selekcije:', error));
             } else {
-                console.error('Trainer ID not found');
+                console.error('Trainer ID not found in local storage.');
             }
         }
 
-        function fetchSelections() {
-            const trainerId = localStorage.getItem('trainerId');
-
-            fetch('http://127.0.0.1:5000/get_trener_selekcije', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ trener_id: trainerId }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                const selekcijaSelect = document.getElementById('selekcijaSelect');
-                selekcijaSelect.innerHTML = ''; // Clear previous selections
-
-                if (data.selekcije && data.selekcije.length > 0) {
-                    data.selekcije.forEach(selekcija => {
-                        const option = document.createElement('option');
-                        option.value = selekcija.id;
-                        option.textContent = selekcija.selekcija;
-                        selekcijaSelect.appendChild(option);
-                    });
-
-                    // Fetch challenges for the first selection by default
-                    fetchChallengesBySelection();
-                }
-            })
-            .catch(error => console.error('Error fetching selections:', error));
-        }
-
-        function fetchChallengesBySelection() {
+        function fetchIzziviBySelekcijaId() {
             const selekcijaId = document.getElementById('selekcijaSelect').value;
+            localStorage.setItem('selectedSelekcijaId', selekcijaId);
 
-            fetch(`http://127.0.0.1:5000/get_all_izzivi_igralci_by_selekcija`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ selekcija_id: selekcijaId }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                const challengesList = document.getElementById('challengesList');
-                challengesList.innerHTML = ''; // Clear previous challenges
+            if (selekcijaId) {
+                fetch(`http://127.0.0.1:5000/get_izzivi_by_selekcija_id`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ selekcija_id: selekcijaId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const izziviList = document.getElementById('izziviList');
+                    izziviList.innerHTML = ''; // Clear previous izzivi
 
-                if (data.izzivi_igralci && data.izzivi_igralci.length > 0) {
-                    data.izzivi_igralci.slice(0, 5).forEach(challenge => {
-                        const challengeDiv = document.createElement('div');
-                        challengeDiv.className = 'card mb-3';
-                        challengeDiv.innerHTML = `
-                            <div class="card-body">
-                                <input type="text" class="form-control mb-2" value="${challenge.ime}" id="izzivIme_${challenge.izzivi_id}">
-                                <textarea class="form-control mb-2" rows="3" id="izzivOpis_${challenge.izzivi_id}">${challenge.opis}</textarea>
-                                <input type="text" class="form-control mb-2" value="${challenge.točkovanje}" id="izzivTockovanje_${challenge.izzivi_id}">
-                                <button class="btn btn-primary" onclick="updateChallenge(${challenge.izzivi_id})">Spremeni</button>
-                                <button class="btn btn-secondary" onclick="addMeasurements(${challenge.izzivi_id})">Dodaj Meritve</button>
-                            </div>
-                        `;
-                        challengesList.appendChild(challengeDiv);
-                    });
-                }
-            })
-            .catch(error => console.error('Error fetching challenges:', error));
+                    if (data.izzivi && data.izzivi.length > 0) {
+                        data.izzivi.forEach(izziv => {
+                            const izzivDiv = document.createElement('div');
+                            izzivDiv.className = 'card mb-3';
+                            izzivDiv.innerHTML = `
+                                <div class="card-body">
+                                    <h5 class="card-title">Ime: <input type="text" class="form-control" value="${izziv.ime}" id="izzivIme_${izziv.izzivi_id}" /></h5>
+                                    <p class="card-text">Opis: <textarea class="form-control" id="izzivOpis_${izziv.izzivi_id}">${izziv.opis}</textarea></p>
+                                    <p class="card-text">Točkovanje: <input type="text" class="form-control" value="${izziv.tockovanje}" id="izzivTockovanje_${izziv.izzivi_id}" /></p>
+                                    <button class="btn btn-custom" onclick="spremeniIzziv(${izziv.izzivi_id}, ${selekcijaId})">Spremeni</button>
+                                    <button class="btn btn-primary" onclick="dodajMeritve(${izziv.izzivi_id})">Dodaj Meritve</button>
+                                </div>
+                            `;
+                            izziviList.appendChild(izzivDiv);
+                        });
+                    } else {
+                        console.error('No challenges found for the selected selekcija.');
+                    }
+                })
+                .catch(error => console.error('Error fetching izzivi:', error));
+            }
         }
 
-        function updateChallenge(izzivId) {
-            const ime = document.getElementById(`izzivIme_${izzivId}`).value;
-            const opis = document.getElementById(`izzivOpis_${izzivId}`).value;
-            const tockovanje = document.getElementById(`izzivTockovanje_${izzivId}`).value;
+        function spremeniIzziv(izziviId, selekcijaId) {
+            const ime = document.getElementById(`izzivIme_${izziviId}`).value;
+            const opis = document.getElementById(`izzivOpis_${izziviId}`).value;
+            const tockovanje = document.getElementById(`izzivTockovanje_${izziviId}`).value;
 
-            fetch('http://127.0.0.1:5000/update_izziv', {
+            fetch(`http://127.0.0.1:5000/update_izziv`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    izziv_id: izzivId,
-                    selekcija_id: document.getElementById('selekcijaSelect').value,
+                    izziv_id: izziviId,
+                    selekcija_id: selekcijaId,
                     ime: ime,
                     opis: opis,
-                    tockovanje: tockovanje,
-                    tedenski_challenge: false // Lahko prilagodimo glede na logiko
+                    točkovanje: tockovanje
                 }),
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Izziv uspešno posodobljen!');
-                    fetchChallengesBySelection(); // Osvežitev izzivov po posodobitvi
+                    alert('Izziv uspešno posodobljen.');
                 } else {
-                    alert('Prišlo je do napake pri posodobitvi izziva.');
+                    alert('Posodobitev izziva ni uspela.');
                 }
             })
-            .catch(error => console.error('Error updating challenge:', error));
+            .catch(error => console.error('Error updating izziv:', error));
         }
 
-        function addMeasurements(izzivId) {
-            // Fetch all players related to the selected challenge and display inputs for adding measurements
-            fetch(`http://127.0.0.1:5000/get_all_izzivi_igralci_by_selekcija`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ selekcija_id: document.getElementById('selekcijaSelect').value }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                const challengesList = document.getElementById('challengesList');
-                challengesList.innerHTML = ''; // Clear previous challenges
-                
-                if (data.izzivi_igralci && data.izzivi_igralci.length > 0) {
-                    data.izzivi_igralci.forEach(igralec => {
-                        const igralecDiv = document.createElement('div');
-                        igralecDiv.className = 'card mb-3';
-                        igralecDiv.innerHTML = `
-                            <div class="card-body">
-                                <h5 class="card-title">${igralec.ime} ${igralec.priimek}</h5>
-                                <p class="card-text">Trener: ${igralec.trener_ime} ${igralec.trener_priimek}</p>
-                                <div class="mb-2">
-                                    <label for="test1_${igralec.id}">Test 1:</label>
-                                    <input type="number" class="form-control" id="test1_${igralec.id}" value="${igralec.test1 || ''}">
-                                </div>
-                                <button class="btn btn-primary" onclick="submitMeasurement(${igralec.id}, ${izzivId})">Shrani Meritve</button>
-                            </div>
-                        `;
-                        challengesList.appendChild(igralecDiv);
-                    });
-                }
-            })
-            .catch(error => console.error('Error fetching players for challenge:', error));
-        }
 
-        function submitMeasurement(igralecId, izzivId) {
-            const test1 = document.getElementById(`test1_${igralecId}`).value;
+        function dodajMeritve(izziviId) {
+            // Store the selected Izziv ID in local storage so that it can be accessed on the next page
+            localStorage.setItem('selectedIzzivId', izziviId);
 
-            fetch('http://127.0.0.1:5000/create_izziv_igralec', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    trener_id: localStorage.getItem('trainerId'),
-                    igralec_id: igralecId,
-                    izziv_id: izzivId,
-                    test1: test1
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Meritve uspešno shranjene!');
-                    fetchChallengesBySelection(); // Osvežitev izzivov po shranjevanju meritev
-                } else {
-                    alert('Prišlo je do napake pri shranjevanju meritev.');
-                }
-            })
-            .catch(error => console.error('Error submitting measurement:', error));
+            // Redirect to the page where measurements can be added
+            window.location.href = 'dodaj_meritve.html';
         }
 
         function editProfile() {
-            window.location.href = '/edit_profile.html'; // Example redirection
+            // Redirect to profile edit page
+            window.location.href = 'edit_profile.html';
         }
-    </script>
+    </script>    
 </body>
 </html>
-
