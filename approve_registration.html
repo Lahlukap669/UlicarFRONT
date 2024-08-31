@@ -218,7 +218,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Registracija uspešno odobrena!');
                     fetchPendingRegistrations(); // Refresh the list after approval
                 } else {
                     alert('Prišlo je do napake pri odobritvi registracije.');

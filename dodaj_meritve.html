@@ -118,7 +118,7 @@
     <!-- Main Content -->
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3>Dodaj Meritve</h3>
+            <h3>Meritve</h3>
             <div>
                 <button class="btn btn-secondary" onclick="goBack()">Nazaj</button>
                 <button class="btn btn-primary ms-2" onclick="openMeritveModal()">Dodaj Meritve</button>
@@ -307,7 +307,6 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Meritve uspešno dodane.');
                         // Refresh the list of meritve
                         fetchIzziviIgralci();
                     } else {
@@ -345,7 +344,8 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Meritve uspešno posodobljene.');
+                        // Refresh the list of meritve
+                        fetchIzziviIgralci();
                     } else {
                         alert('Posodobitev meritev ni uspela.');
                     }
