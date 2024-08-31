@@ -44,6 +44,18 @@
             margin-right: 20px;
             cursor: pointer;
         }
+        .dropdown-menu {
+            right: 0;
+            left: auto;
+            background-color: #00796b; /* Temno zelena za ozadje dropdown menija */
+        }
+        .dropdown-item {
+            color: #ffffff !important; /* Bela za besedilo dropdown itemov */
+        }
+        .dropdown-item:hover {
+            background-color: #004d40 !important; /* Temnejša zelena ob hoverju */
+            color: #ffffff !important; /* Ohranimo belo besedilo ob hoverju */
+        }
     </style>
 </head>
 <body>
@@ -57,7 +69,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="sprejemanje_igralcev.html">Sprejemanje Igralcev</a>
+                        <a class="nav-link active" aria-current="page" href="approve_registration.html">Sprejemanje Igralcev</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"  href="izzivi.html">Izzivi</a>
@@ -72,9 +84,15 @@
                         <a class="nav-link" href="lestvica.html">Lestvica</a>
                     </li>
                 </ul>
-                <span class="navbar-text" id="trainerNameSurname" onclick="editProfile()">
-                    <!-- Ime in priimek trenerja bo tukaj -->
-                </span>
+                <div class="dropdown">
+                    <span class="navbar-text dropdown-toggle" id="trainerNameSurname" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- Ime in priimek trenerja bo tukaj -->
+                    </span>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="trainerNameSurname">
+                        <li><a class="dropdown-item" href="#" onclick="editProfile()">Edit Profile</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
@@ -210,7 +228,14 @@
         }
 
         function editProfile() {
-            window.location.href = '/edit_profile.html'; // Example redirection
+            window.location.href = './uredi_profil.html'; // Example redirection
+        }
+        function logout() {
+            // Clear local storage and redirect to login page
+            localStorage.removeItem('trainerId');
+            localStorage.removeItem('trainerName');
+            localStorage.removeItem('trainerSurname');
+            window.location.href = 'trenerji_login.html';
         }
     </script>
 </body>

@@ -60,6 +60,18 @@
             color: #00796b !important;
             border-radius: 5px;
         }
+        .dropdown-menu {
+            right: 0;
+            left: auto;
+            background-color: #00796b; /* Temno zelena za ozadje dropdown menija */
+        }
+        .dropdown-item {
+            color: #ffffff !important; /* Bela za besedilo dropdown itemov */
+        }
+        .dropdown-item:hover {
+            background-color: #004d40 !important; /* Temnejša zelena ob hoverju */
+            color: #ffffff !important; /* Ohranimo belo besedilo ob hoverju */
+        }
     </style>
 </head>
 
@@ -90,9 +102,15 @@
                         <a class="nav-link" href="lestvica.html">Lestvica</a>
                     </li>
                 </ul>
-                <span class="navbar-text" id="trainerNameSurname" onclick="editProfile()">
-                    <!-- Ime in priimek trenerja bo tukaj -->
-                </span>
+                <div class="dropdown">
+                    <span class="navbar-text dropdown-toggle" id="trainerNameSurname" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- Ime in priimek trenerja bo tukaj -->
+                    </span>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="trainerNameSurname">
+                        <li><a class="dropdown-item" href="#" onclick="editProfile()">Edit Profile</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
@@ -174,51 +192,59 @@
                     },
                     body: JSON.stringify({ selekcija_id: izzivId }),
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        const izziviIgralciList = document.getElementById('izziviIgralciList');
-                        izziviIgralciList.innerHTML = ''; // Clear previous cards
+                .then(response => response.json())
+                .then(data => {
+                    const izziviIgralciList = document.getElementById('izziviIgralciList');
+                    izziviIgralciList.innerHTML = ''; // Clear previous cards
 
-                        if (data.izzivi_igralci && data.izzivi_igralci.length > 0) {
-                            data.izzivi_igralci.forEach(izzivIgralec => {
-                                // Fetch the player's name and surname by their ID
-                                fetch(`http://127.0.0.1:5000/get_igralec_by_id`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({ igralec_id: izzivIgralec.igralec_id }),
-                                })
-                                    .then(response => response.json())
-                                    .then(playerData => {
-                                        if (playerData.success) {
-                                            const igralec = playerData.igralec;
-                                            const izzivDiv = document.createElement('div');
-                                            izzivDiv.className = 'col-md-4 card mb-3';  // Added Bootstrap column classes for multiple cards in one row
-                                            izzivDiv.innerHTML = `
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Igralec: ${igralec.ime} ${igralec.priimek}</h5>
-                                                    <p class="card-text">Test 1: <input type="number" class="form-control" value="${izzivIgralec.test1}" id="test1_${izzivIgralec.id}" /></p>
-                                                    <p class="card-text">Test 2: <input type="number" class="form-control" value="${izzivIgralec.test2}" id="test2_${izzivIgralec.id}" /></p>
-                                                    <button class="btn btn-custom" onclick="spremeniMeritve(${izzivIgralec.id})">Spremeni</button>
-                                                </div>
-                                            `;
-                                            izziviIgralciList.appendChild(izzivDiv);
-                                        } else {
-                                            console.error('Failed to fetch player details.');
-                                        }
-                                    })
-                                    .catch(error => console.error('Error fetching player details:', error));
-                            });
-                        } else {
-                            console.error('No meritve found for the selected izziv.');
-                        }
-                    })
-                    .catch(error => console.error('Error fetching izz                    ivi_igralci:', error));
+                    if (data.izzivi_igralci && data.izzivi_igralci.length > 0) {
+                        const rowDiv = document.createElement('div');
+                        rowDiv.className = 'row'; // Row to hold multiple cards in one line
+                        izziviIgralciList.appendChild(rowDiv);
+
+                        data.izzivi_igralci.forEach(izzivIgralec => {
+                            // Fetch the player's name and surname by their ID
+                            fetch(`http://127.0.0.1:5000/get_igralec_by_id`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ igralec_id: izzivIgralec.igralec_id }),
+                            })
+                            .then(response => response.json())
+                            .then(playerData => {
+                                if (playerData.success) {
+                                    const igralec = playerData.igralec;
+                                    const colDiv = document.createElement('div');
+                                    colDiv.className = 'col-md-4';  // Column for responsive design
+                                    colDiv.innerHTML = `
+                                        <div class="card mb-3">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Igralec: ${igralec.ime} ${igralec.priimek}</h5>
+                                                <input type="hidden" id="igralecID_${izzivIgralec.id}" value="${izzivIgralec.igralec_id}" />
+                                                <p class="card-text">Test 1: <input type="number" class="form-control" value="${izzivIgralec.test1}" id="test1_${izzivIgralec.id}" /></p>
+                                                <p class="card-text">Test 2: <input type="number" class="form-control" value="${izzivIgralec.test2}" id="test2_${izzivIgralec.id}" /></p>
+                                                <button class="btn btn-custom" onclick="spremeniMeritve(${izzivIgralec.id})">Spremeni</button>
+                                            </div>
+                                        </div>
+                                    `;
+                                    rowDiv.appendChild(colDiv); // Append the card to the row
+                                } else {
+                                    console.error('Failed to fetch player details.');
+                                }
+                            })
+                            .catch(error => console.error('Error fetching player details:', error));
+                        });
+                    } else {
+                        console.error('No meritve found for the selected izziv.');
+                    }
+                })
+                .catch(error => console.error('Error fetching izzivi_igralci:', error));
             } else {
                 console.error('Selected Izziv ID not found in local storage.');
             }
         }
+
 
         function fetchPlayers() {
             const selekcijaId = localStorage.getItem('selectedSelekcijaId');
@@ -262,7 +288,7 @@
         function createIzzivIgralec() {
             const trenerId = localStorage.getItem('trainerId');
             const izzivId = localStorage.getItem('selectedIzzivId');
-            const igralecId = document.getElementById('igralecSelect').value;
+            const igralecId = document.getElementById(`igralecSelect`).value;
             const test1 = document.getElementById('test1Input').value;
 
             if (trenerId && izzivId && igralecId && test1) {
@@ -285,7 +311,7 @@
                         // Refresh the list of meritve
                         fetchIzziviIgralci();
                     } else {
-                        alert('Dodajanje meritev ni uspelo.');
+                        alert('Dodajanje meritev ni uspelo. Igralec je morda že dodan.');
                     }
                 })
                 .catch(error => console.error('Error creating meritve:', error));
@@ -297,42 +323,56 @@
         function spremeniMeritve(izzivIgralecId) {
             const trenerId = localStorage.getItem('trainerId');
             const izzivId = localStorage.getItem('selectedIzzivId');
-            const igralecId = document.getElementById('igralecSelect').value;
+            const igralecId = document.getElementById(`igralecID_${izzivIgralecId}`).value;  // Get the correct igralec_id
             const test1 = document.getElementById(`test1_${izzivIgralecId}`).value;
             const test2 = document.getElementById(`test2_${izzivIgralecId}`).value;
 
-            fetch(`http://127.0.0.1:5000/update_izziv_igralec`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    izziv_igralec_id: izzivIgralecId,
-                    trener_id: trenerId,
-                    igralec_id: igralecId,
-                    izziv_id: izzivId,
-                    test1: test1,
-                    test2: test2
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Meritve uspešno posodobljene.');
-                } else {
-                    alert('Posodobitev meritev ni uspela.');
-                }
-            })
-            .catch(error => console.error('Error updating meritve:', error));
+            if (igralecId) {
+                fetch(`http://127.0.0.1:5000/update_izziv_igralec`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        izziv_igralec_id: izzivIgralecId,
+                        trener_id: trenerId,
+                        igralec_id: igralecId,  // Use the correct igralec_id
+                        izziv_id: izzivId,
+                        test1: test1,
+                        test2: test2
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Meritve uspešno posodobljene.');
+                    } else {
+                        alert('Posodobitev meritev ni uspela.');
+                    }
+                })
+                .catch(error => console.error('Error updating meritve:', error));
+            } else {
+                alert('Igralec ID ni bil pravilno nastavljen.');
+            }
         }
+
+
 
         function goBack() {
             window.location.href = 'izzivi.html';
         }
 
         function editProfile() {
-            // Redirect to profile edit page
-            window.location.href = 'edit_profile.html';
+            // Redirect to profile edit page or show a modal
+            window.location.href = './uredi_profil.html'; // Example redirection
+        }
+
+        function logout() {
+            // Clear local storage and redirect to login page
+            localStorage.removeItem('trainerId');
+            localStorage.removeItem('trainerName');
+            localStorage.removeItem('trainerSurname');
+            window.location.href = 'trenerji_login.html';
         }
     </script>
 </body>
