@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,19 +54,23 @@
         .btn-custom:hover {
             background-color: #218838;
         }
+        
         .navbar a.active {
             background-color: #ffffff !important;
             color: #00796b !important;
             border-radius: 5px;
         }
+        
         .dropdown-menu {
             right: 0;
             left: auto;
             background-color: #00796b; /* Temno zelena za ozadje dropdown menija */
         }
+        
         .dropdown-item {
             color: #ffffff !important; /* Bela za besedilo dropdown itemov */
         }
+        
         .dropdown-item:hover {
             background-color: #004d40 !important; /* Temnejša zelena ob hoverju */
             color: #ffffff !important; /* Ohranimo belo besedilo ob hoverju */
@@ -185,12 +188,12 @@
             const izzivId = localStorage.getItem('selectedIzzivId');
 
             if (izzivId) {
-                fetch(`http://127.0.0.1:5000/get_all_izzivi_igralci_by_selekcija`, {
+                fetch(`http://127.0.0.1:5000/get_all_izzivi_igralci_by_izziv_id`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ selekcija_id: izzivId }),
+                    body: JSON.stringify({ izziv_id: izzivId }),
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -203,7 +206,6 @@
                         izziviIgralciList.appendChild(rowDiv);
 
                         data.izzivi_igralci.forEach(izzivIgralec => {
-                            // Fetch the player's name and surname by their ID
                             fetch(`http://127.0.0.1:5000/get_igralec_by_id`, {
                                 method: 'POST',
                                 headers: {
@@ -222,9 +224,11 @@
                                             <div class="card-body">
                                                 <h5 class="card-title">Igralec: ${igralec.ime} ${igralec.priimek}</h5>
                                                 <input type="hidden" id="igralecID_${izzivIgralec.id}" value="${izzivIgralec.igralec_id}" />
+                                                <input type="hidden" id="izzivIgralecID_${izzivIgralec.id}" value="${izzivIgralec.id}" /> <!-- Added hidden field for izziv_igralec_id -->
                                                 <p class="card-text">Test 1: <input type="number" class="form-control" value="${izzivIgralec.test1}" id="test1_${izzivIgralec.id}" /></p>
                                                 <p class="card-text">Test 2: <input type="number" class="form-control" value="${izzivIgralec.test2}" id="test2_${izzivIgralec.id}" /></p>
                                                 <button class="btn btn-custom" onclick="spremeniMeritve(${izzivIgralec.id})">Spremeni</button>
+                                                <button class="btn btn-danger ms-2" onclick="izbrisiMeritve(${izzivIgralec.id})">Izbriši</button>
                                             </div>
                                         </div>
                                     `;
@@ -265,7 +269,7 @@
                     if (data.igralci && data.igralci.length > 0) {
                         data.igralci.forEach(igralec => {
                             const option = document.createElement('option');
-                            option.value = igralec.id;  // Changed to match the correct ID field returned by API
+                            option.value = igralec.id;  
                             option.textContent = `${igralec.ime} ${igralec.priimek}`;
                             igralecSelect.appendChild(option);
                         });
@@ -288,7 +292,7 @@
         function createIzzivIgralec() {
             const trenerId = localStorage.getItem('trainerId');
             const izzivId = localStorage.getItem('selectedIzzivId');
-            const igralecId = document.getElementById(`igralecSelect`).value;
+            const igralecId = document.getElementById('igralecSelect').value;
             const test1 = document.getElementById('test1Input').value;
 
             if (trenerId && izzivId && igralecId && test1) {
@@ -325,17 +329,18 @@
             const igralecId = document.getElementById(`igralecID_${izzivIgralecId}`).value;  // Get the correct igralec_id
             const test1 = document.getElementById(`test1_${izzivIgralecId}`).value;
             const test2 = document.getElementById(`test2_${izzivIgralecId}`).value;
+            const fetchedIzzivIgralecId = document.getElementById(`izzivIgralecID_${izzivIgralecId}`).value; // Fetch the correct izziv_igralec_id
 
-            if (igralecId) {
+            if (igralecId && fetchedIzzivIgralecId) {
                 fetch(`http://127.0.0.1:5000/update_izziv_igralec`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        izziv_igralec_id: izzivIgralecId,
+                        izziv_igralec_id: fetchedIzzivIgralecId, // Use the fetched izziv_igralec_id
                         trener_id: trenerId,
-                        igralec_id: igralecId,  // Use the correct igralec_id
+                        igralec_id: igralecId,
                         izziv_id: izzivId,
                         test1: test1,
                         test2: test2
@@ -352,11 +357,9 @@
                 })
                 .catch(error => console.error('Error updating meritve:', error));
             } else {
-                alert('Igralec ID ni bil pravilno nastavljen.');
+                alert('Igralec ID or Izziv Igralec ID ni bil pravilno nastavljen.');
             }
         }
-
-
 
         function goBack() {
             window.location.href = 'izzivi.html';
@@ -373,6 +376,27 @@
             localStorage.removeItem('trainerName');
             localStorage.removeItem('trainerSurname');
             window.location.href = 'trenerji_login.html';
+        }
+        function izbrisiMeritve(izzivIgralecId) {
+            if (confirm("Ste prepričani, da želite izbrisati te meritve?")) {
+                fetch(`http://127.0.0.1:5000/delete_izziv_igralec`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ izziv_igralec_id: izzivIgralecId }),  // Assuming your API expects 'id' for the deletion
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Refresh the list of meritve
+                        fetchIzziviIgralci();
+                    } else {
+                        alert('Brisanje meritev ni uspelo.');
+                    }
+                })
+                .catch(error => console.error('Napaka pri brisanju meritev:', error));
+            }
         }
     </script>
 </body>
