@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moji Igralci</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e0f7fa;
+            color: #00796b;
+        }
+
+        .navbar {
+            background-color: #00796b;
+        }
+
+        .navbar a {
+            color: #ffffff !important;
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+
+        .navbar a:hover {
+            color: #00796b !important;
+            background-color: #ffffff !important;
+            border-radius: 5px;
+        }
+
+        .container {
+            margin-top: 20px;
+        }
+
+        .card-container {
+            margin-top: 40px;
+            padding: 0 15px;
+        }
+
+        .navbar-text {
+            margin-right: 20px;
+            cursor: pointer;
+        }
+
+        .btn-custom {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background-color: #218838;
+        }
+        
+        .navbar a.active {
+            background-color: #ffffff !important;
+            color: #00796b !important;
+            border-radius: 5px;
+        }
+        
+        .dropdown-menu {
+            right: 0;
+            left: auto;
+            background-color: #00796b;
+        }
+        
+        .dropdown-item {
+            color: #ffffff !important;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #004d40 !important;
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="trenerji_dashboard.html">Trenerji Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="approve_registration.html">Sprejemanje Igralcev</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="izzivi.html">Izzivi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="drugi_izzivi.html">Drugi Izzivi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="moji_igralci.html">Moji Igralci</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="lestvica.html">Lestvica</a>
+                    </li>
+                </ul>
+                <div class="dropdown">
+                    <span class="navbar-text dropdown-toggle" id="trainerNameSurname" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- Ime in priimek trenerja bo tukaj -->
+                    </span>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="trainerNameSurname">
+                        <li><a class="dropdown-item" href="#" onclick="editProfile()">Edit Profile</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h3 class="text-center">Moji Igralci</h3>
+
+        <!-- Dropdown to select Selekcija -->
+        <div class="form-group mb-4">
+            <label for="selekcijaSelect">Izberite Selekcijo:</label>
+            <select id="selekcijaSelect" class="form-control" onchange="fetchIgralciBySelekcijaId()">
+                <!-- Options will be dynamically populated -->
+            </select>
+        </div>
+
+        <!-- List of Igralci -->
+        <div id="igralciList" class="card-container row">
+            <!-- Igralci cards will be displayed here -->
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            displayTrainerName();
+            fetchTrenerSelekcije();
+        });
+
+        function displayTrainerName() {
+            const trainerName = localStorage.getItem('trainerName');
+            const trainerSurname = localStorage.getItem('trainerSurname');
+
+            if (trainerName && trainerSurname) {
+                const trainerNameSurname = document.getElementById('trainerNameSurname');
+                trainerNameSurname.textContent = `${trainerName} ${trainerSurname}`;
+            } else {
+                console.error('Trainer name or surname not found in local storage.');
+            }
+        }
+
+        function fetchTrenerSelekcije() {
+            const trainerId = localStorage.getItem('trainerId');
+
+            if (trainerId) {
+                fetch(`http://127.0.0.1:5000/get_trenerji_selekcije_by_trener_id`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ trener_id: trainerId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const selekcijaSelect = document.getElementById('selekcijaSelect');
+                        selekcijaSelect.innerHTML = '';
+
+                        if (data.trenerji_selekcije && data.trenerji_selekcije.length > 0) {
+                            data.trenerji_selekcije.forEach(selekcija => {
+                                // Fetch Selekcija details by ID
+                                fetch(`http://127.0.0.1:5000/get_selekcija_by_id`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ selekcija_id: selekcija.selekcija_id }),
+                                })
+                                .then(response => response.json())
+                                .then(selekcijaData => {
+                                    if (selekcijaData.success) {
+                                        const option = document.createElement('option');
+                                        option.value = selekcijaData.selekcija.selekcija_id; 
+                                        option.textContent = selekcijaData.selekcija.selekcija;
+                                        selekcijaSelect.appendChild(option);
+
+                                        // Set the selected selekcija ID in local storage
+                                        localStorage.setItem('selectedSelekcijaId', selekcijaData.selekcija.selekcija_id);
+
+                                        // Fetch players for the first Selekcija by default
+                                        if (selekcijaSelect.options.length === 1) {
+                                            fetchIgralciBySelekcijaId();
+                                        }
+                                    }
+                                })
+                                .catch(error => console.error('Error fetching selekcija:', error));
+                            });
+                        } else {
+                            console.error('No selections found for the trainer.');
+                        }
+                    } else {
+                        console.error('Failed to fetch selections. Response:', data);
+                    }
+                })
+                .catch(error => console.error('Error fetching trenerji selekcije:', error));
+            } else {
+                console.error('Trainer ID not found in local storage.');
+            }
+        }
+
+        function fetchIgralciBySelekcijaId() {
+            const selekcijaId = document.getElementById('selekcijaSelect').value; // Get the selected Selekcija ID from the dropdown
+            localStorage.setItem('selectedSelekcijaId', selekcijaId); // Store in local storage for consistency
+
+            if (selekcijaId) {
+                fetch(`http://127.0.0.1:5000/get_all_igralci_by_selekcija_id`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ selekcija_id: selekcijaId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const igralciList = document.getElementById('igralciList');
+                    igralciList.innerHTML = ''; // Clear previous options
+
+                    if (data.igralci && data.igralci.length > 0) {
+                        data.igralci.forEach(igralec => {
+                            const colDiv = document.createElement('div');
+                            colDiv.className = 'col-md-4';
+
+                            colDiv.innerHTML = `
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${igralec.ime} ${igralec.priimek}</h5>
+                                        <p class="card-text">Telefon: ${igralec.telefon}</p>
+                                        <p class="card-text">Uporabniško ime: ${igralec.username}</p>
+                                    </div>
+                                </div>
+                            `;
+                            igralciList.appendChild(colDiv);
+                        });
+                    } else {
+                        const noDataDiv = document.createElement('div');
+                        noDataDiv.className = 'col-12';
+                        noDataDiv.innerHTML = `
+                            <div class="alert alert-warning text-center">
+                                Ni igralcev za izbrano selekcijo.
+                            </div>
+                        `;
+                        igralciList.appendChild(noDataDiv);
+                    }
+                })
+                .catch(error => console.error('Error fetching players:', error));
+            } else {
+                console.error('Selected Selekcija ID not found in local storage.');
+            }
+        }
+
+        function editProfile() {
+            window.location.href = 'uredi_profil.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('trainerId');
+            localStorage.removeItem('trainerName');
+            localStorage.removeItem('trainerSurname');
+            window.location.href = 'trenerji_login.html';
+        }
+    </script>
+</body>
+</html>
