@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uredi Profil</title>
-    <!-- Bootstrap CSS -->
+    <title>Uredi Profil - Trenerji</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -41,6 +40,9 @@
         .back-button {
             float: right;
             margin-bottom: 20px;
+        }
+        .form-group label {
+            font-weight: bold;
         }
     </style>
 </head>
@@ -87,7 +89,7 @@
                 <input type="text" class="form-control" id="tel" placeholder="Vnesite vašo telefonsko številko" required>
             </div>
             <div class="form-group mb-3">
-                <label for="geslo">Novo geslo (po želji):</label>
+                <label for="geslo">Geslo (pustite prazno, če ne želite spremeniti):</label>
                 <input type="password" class="form-control" id="geslo" placeholder="Vnesite novo geslo">
             </div>
             <button type="submit" class="btn btn-primary">Shrani spremembe</button>
