@@ -188,7 +188,7 @@
                                 .then(selekcijaData => {
                                     if (selekcijaData.success) {
                                         const option = document.createElement('option');
-                                        option.value = selekcijaData.selekcija.selekcija_id; 
+                                        option.value = selekcijaData.selekcija.selekcije_id; 
                                         option.textContent = selekcijaData.selekcija.selekcija;
                                         selekcijaSelect.appendChild(option);
 
@@ -242,7 +242,7 @@
                                 <div class="card mb-3">
                                     <div class="card-body">
                                         <h5 class="card-title">${igralec.ime} ${igralec.priimek}</h5>
-                                        <p class="card-text">Telefon: ${igralec.telefon}</p>
+                                        <p class="card-text">Telefon: ${igralec.tel}</p>
                                         <p class="card-text">Uporabniško ime: ${igralec.username}</p>
                                     </div>
                                 </div>

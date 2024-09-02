@@ -8,11 +8,11 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #e0f7fa; /* Lighter shade of green from the login form */
         }
         .container {
             margin-top: 100px;
-            background-color: #007bff;
+            background-color: #007bff; /* Blue from the login form */
             border-radius: 15px;
             padding: 40px;
             box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
@@ -108,10 +108,38 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                igralecId = data.igralec_id;
-                alert('Prijava uspešna!');
-                // Redirect to igralci's dashboard (replace 'dashboard.html' with the actual page)
-                window.location.href = 'dashboard_igralci.html';
+                const igralecId = data.igralec_id;
+                localStorage.setItem('igralecId', igralecId);
+
+                // Fetch additional player details after successful login
+                fetch('http://127.0.0.1:5000/get_igralec_by_id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        igralec_id: igralecId,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        localStorage.setItem('igralecIme', data.igralec.ime);
+                        localStorage.setItem('igralecPriimek', data.igralec.priimek);
+                        localStorage.setItem('igralecUsername', data.igralec.username);
+                        localStorage.setItem('igralecTel', data.igralec.tel);
+                        localStorage.setItem('igralecScore', data.igralec.score);
+                        localStorage.setItem('selectedSelekcijaId', data.igralec.selekcija_id);
+                        // Redirect to igralci's dashboard
+                        window.location.href = 'igralci_dashboard.html';
+                    } else {
+                        alert('Napaka pri pridobivanju podatkov igralca.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Napaka pri pridobivanju podatkov igralca:', error);
+                    alert('Prišlo je do napake pri pridobivanju podatkov igralca. Poskusite znova.');
+                });
             } else {
                 alert('Neveljavno uporabniško ime ali geslo. Poskusite znova.');
             }
@@ -121,6 +149,7 @@
             alert('Prišlo je do napake. Poskusite znova.');
         });
     });
+
 </script>
 
 </body>

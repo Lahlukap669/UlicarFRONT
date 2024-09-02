@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lestvica Igralci</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e0f7fa;
+            color: #007bff;
+        }
+
+        .navbar {
+            background-color: #007bff;
+        }
+
+        .navbar a {
+            color: #ffffff !important;
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+
+        .navbar a:hover {
+            color: #007bff !important;
+            background-color: #ffffff !important;
+            border-radius: 5px;
+        }
+
+        .container {
+            margin-top: 20px;
+        }
+
+        .card-container {
+            margin-top: 40px;
+            padding: 0 15px;
+        }
+
+        .navbar-text {
+            margin-right: 20px;
+            cursor: pointer;
+        }
+
+        .btn-custom {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background-color: #218838;
+        }
+
+        .navbar a.active {
+            background-color: #ffffff !important;
+            color: #007bff !important;
+            border-radius: 5px;
+        }
+
+        .dropdown-menu {
+            right: 0;
+            left: auto;
+            background-color: #007bff;
+        }
+
+        .dropdown-item {
+            color: #ffffff !important;
+        }
+
+        .dropdown-item:hover {
+            background-color: #0056b3 !important;
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="igralci_dashboard.html">Igralci Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="igralci_dashboard.html">Izzivi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="drugi_izzivi_i.html">Drugi Izzivi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="lestvica_i.html">Lestvica</a>
+                    </li>
+                </ul>
+                <div class="dropdown">
+                    <span class="navbar-text dropdown-toggle" id="igralecNameSurname" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- Ime in priimek igralca bo tukaj -->
+                    </span>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="igralecNameSurname">
+                        <li><a class="dropdown-item" href="uredi_profil_i.html" onclick="editProfile()">Uredi Profil</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()">Odjava</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h3 class="text-center">Izberite Selekcijo za Lestvico</h3>
+        
+        <!-- Dropdown to select Selekcija -->
+        <div class="form-group mb-4">
+            <label for="selekcijaSelect"><b>Izberite Selekcijo:</b></label>
+            <select id="selekcijaSelect" class="form-control" onchange="fetchLestvicaBySelekcijaId()">
+                <!-- Options will be dynamically populated -->
+            </select>
+        </div>
+
+        <!-- List of Igralci in Lestvica -->
+        <div id="lestvicaList" class="card-container list-group">
+            <!-- Lestvica items will be displayed here -->
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            displayIgralecName();
+            fetchSelekcijaAndSelekcije();
+        });
+
+        function displayIgralecName() {
+            const igralecIme = localStorage.getItem('igralecIme');
+            const igralecPriimek = localStorage.getItem('igralecPriimek');
+
+            if (igralecIme && igralecPriimek) {
+                const igralecNameSurname = document.getElementById('igralecNameSurname');
+                igralecNameSurname.textContent = `${igralecIme} ${igralecPriimek}`;
+            } else {
+                console.error('Ime or priimek igralca not found in local storage.');
+            }
+        }
+
+        function fetchSelekcijaAndSelekcije() {
+            const selekcijaId = localStorage.getItem('selectedSelekcijaId');
+
+            if (selekcijaId) {
+                fetch('http://127.0.0.1:5000/get_selekcija_by_id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ selekcija_id: selekcijaId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.selekcija) {
+                        const klubId = data.selekcija.klub_id;
+                        localStorage.setItem('klubId', klubId);
+                        fetchSelekcije(klubId);
+                    } else {
+                        console.error('Selekcija not found.');
+                    }
+                })
+                .catch(error => console.error('Error fetching selekcija:', error));
+            } else {
+                console.error('Selected Selekcija ID not found in local storage.');
+            }
+        }
+
+        function fetchSelekcije(klubId) {
+            if (klubId) {
+                fetch('http://127.0.0.1:5000/get_all_selekcije_by_klub_id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ klub_id: klubId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const selekcijaSelect = document.getElementById('selekcijaSelect');
+                    selekcijaSelect.innerHTML = ''; // Clear previous options
+
+                    if (data.success && data.selekcije.length > 0) {
+                        data.selekcije.forEach(selekcija => {
+                            const option = document.createElement('option');
+                            option.value = selekcija.id;
+                            option.textContent = selekcija.selekcija;
+                            selekcijaSelect.appendChild(option);
+                        });
+
+                        // Fetch the leaderboard for the first selekcija by default
+                        if (selekcijaSelect.options.length > 0) {
+                            selekcijaSelect.selectedIndex = 0;
+                            fetchLestvicaBySelekcijaId();
+                        }
+                    } else {
+                        console.error('No selekcije found for this klub.');
+                    }
+                })
+                .catch(error => console.error('Error fetching selekcije:', error));
+            } else {
+                console.error('Klub ID not found.');
+            }
+        }
+
+        function fetchLestvicaBySelekcijaId() {
+            const selekcijaId = document.getElementById('selekcijaSelect').value;
+
+            if (selekcijaId) {
+                fetch('http://127.0.0.1:5000/get_leaderboard_by_selekcija', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ selekcija_id: selekcijaId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const lestvicaList = document.getElementById('lestvicaList');
+                    lestvicaList.innerHTML = ''; // Clear previous list
+
+                    if (data.success && data.leaderboard.length > 0) {
+                        data.leaderboard.forEach((igralec, index) => {
+                            const listItem = document.createElement('div');
+                            listItem.className = 'list-group-item';
+                            listItem.innerHTML = `
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5>${index + 1}. ${igralec.ime} ${igralec.priimek}</h5>
+                                        <p>Username: ${igralec.username}</p>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-primary">${igralec.total_score} točk</span>
+                                    </div>
+                                </div>
+                            `;
+                            lestvicaList.appendChild(listItem);
+                        });
+                    } else {
+                        const noDataItem = document.createElement('div');
+                        noDataItem.className = 'list-group-item';
+                        noDataItem.textContent = 'Ni podatkov za izbrano selekcijo.';
+                        lestvicaList.appendChild(noDataItem);
+                    }
+                })
+                .catch(error => console.error('Error fetching lestvica:', error));
+            } else {
+                console.error('Selected Selekcija ID not found.');
+            }
+        }
+
+
+        function editProfile() {
+            window.location.href = 'uredi_profil_igralci.html'; // Example redirection
+        }
+
+        function logout() {
+            localStorage.removeItem('igralecId');
+            localStorage.removeItem('igralecIme');
+            localStorage.removeItem('igralecPriimek');
+            localStorage.removeItem('selectedSelekcijaId');
+            localStorage.removeItem('klubId');
+            window.location.href = 'igralci_login.html';
+        }
+    </script>
+</body>
+</html>
+

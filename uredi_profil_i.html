@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uredi Profil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e0f7fa; /* Lighter shade of green from the login form */
+            color: #007bff; /* Blue text */
+        }
+
+        .navbar {
+            background-color: #007bff; /* Blue from the login form */
+        }
+
+        .navbar a {
+            color: #ffffff !important;
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+
+        .navbar a:hover {
+            color: #007bff !important;
+            background-color: #ffffff !important;
+            border-radius: 5px;
+        }
+
+        .container {
+            margin-top: 20px;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group label {
+            font-weight: bold;
+        }
+
+        .btn-custom {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="igralci_dashboard.html">Igralci Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="izzivi.html">Izzivi</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="drugi_izzivi.html">Drugi Izzivi</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="lestvica_i.html">Lestvica</a>
+                </li>
+            </ul>
+            <div class="dropdown">
+                <span class="navbar-text dropdown-toggle" id="igralecNameSurname" data-bs-toggle="dropdown" aria-expanded="false">
+                    <!-- Ime in priimek igralca bo tukaj -->
+                </span>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="igralecNameSurname">
+                    <li><a class="dropdown-item" href="#" onclick="logout()">Odjava</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container">
+    <h3 class="text-center">Uredi Profil</h3>
+    <form id="profileForm">
+        <div class="form-group mb-3">
+            <label for="ime">Ime:</label>
+            <input type="text" class="form-control" id="ime" required>
+        </div>
+        <div class="form-group mb-3">
+            <label for="priimek">Priimek:</label>
+            <input type="text" class="form-control" id="priimek" required>
+        </div>
+        <div class="form-group mb-3">
+            <label for="username">Uporabniško Ime:</label>
+            <input type="text" class="form-control" id="username" required>
+        </div>
+        <div class="form-group mb-3">
+            <label for="tel">Telefonska številka:</label>
+            <input type="tel" class="form-control" id="tel">
+        </div>
+        <div class="form-group mb-3">
+            <label for="geslo">Geslo:</label>
+            <input type="password" class="form-control" id="geslo" required>
+        </div>
+        <button type="submit" class="btn btn-custom">Posodobi</button>
+    </form>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+<!-- Custom JS -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        displayIgralecName();
+        loadProfileData();
+    });
+
+    function displayIgralecName() {
+        const igralecIme = localStorage.getItem('igralecIme');
+        const igralecPriimek = localStorage.getItem('igralecPriimek');
+
+        if (igralecIme && igralecPriimek) {
+            const igralecNameSurname = document.getElementById('igralecNameSurname');
+            igralecNameSurname.textContent = `${igralecIme} ${igralecPriimek}`;
+        } else {
+            console.error('Ime or priimek igralca not found in local storage.');
+        }
+    }
+
+    function loadProfileData() {
+        const igralecId = localStorage.getItem('igralecId');
+
+        if (igralecId) {
+            fetch('http://127.0.0.1:5000/get_igralec_by_id', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ igralec_id: igralecId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('ime').value = data.igralec.ime;
+                    document.getElementById('priimek').value = data.igralec.priimek;
+                    document.getElementById('username').value = data.igralec.username;
+                    document.getElementById('tel').value = data.igralec.tel;
+                } else {
+                    console.error('Failed to load player profile data.');
+                }
+            })
+            .catch(error => console.error('Error fetching profile data:', error));
+        }
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const igralecId = localStorage.getItem('igralecId');
+        const selekcijaId = localStorage.getItem('selectedSelekcijaId'); // Assumes selekcijaId is stored in localStorage
+        const ime = document.getElementById('ime').value;
+        const priimek = document.getElementById('priimek').value;
+        const username = document.getElementById('username').value;
+        const tel = document.getElementById('tel').value;
+        const geslo = document.getElementById('geslo').value;
+        const score = 0; // Assuming score remains unchanged during profile update
+
+        if (igralecId) {
+            fetch('http://127.0.0.1:5000/update_igralec', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    igralec_id: igralecId,
+                    selekcija_id: selekcijaId,
+                    ime: ime,
+                    priimek: priimek,
+                    username: username,
+                    geslo: geslo,
+                    tel: tel,
+                    score: score
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Profil uspešno posodobljen.');
+                    window.location.href = 'igralci_dashboard.html'; // Redirect to dashboard
+                } else {
+                    alert('Posodobitev profila ni uspela. Poskusite znova.');
+                }
+            })
+            .catch(error => console.error('Error updating profile:', error));
+        } else {
+            console.error('Igralec ID not found in local storage.');
+        }
+    });
+
+    function logout() {
+        // Clear local storage and redirect to login page
+        localStorage.removeItem('igralecId');
+        localStorage.removeItem('igralecIme');
+        localStorage.removeItem('igralecPriimek');
+        localStorage.removeItem('igralecUsername');
+        localStorage.removeItem('igralecTel');
+        localStorage.removeItem('igralecScore');
+        localStorage.removeItem('selectedSelekcijaId');
+        window.location.href = 'igralci_login.html';
+    }
+</script>
+
+</body>
+</html>
