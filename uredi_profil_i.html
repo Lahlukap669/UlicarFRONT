@@ -75,32 +75,19 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="igralci_dashboard.html">Igralci Dashboard</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <a class="navbar-brand" href="#">Uredi Profil</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="izzivi.html">Izzivi</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="drugi_izzivi.html">Drugi Izzivi</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="lestvica_i.html">Lestvica</a>
+                        <a class="nav-link" href="igralci_dashboard.html">Nazaj na Dashboard</a>
                     </li>
                 </ul>
-                <div class="dropdown">
-                    <span class="navbar-text dropdown-toggle" id="igralecNameSurname" data-bs-toggle="dropdown" aria-expanded="false">
-                        <!-- Ime in priimek igralca bo tukaj -->
-                    </span>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="igralecNameSurname">
-                        <li><a class="dropdown-item" href="#" onclick="editProfile()">Uredi Profil</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="logout()">Odjava</a></li>
-                    </ul>
-                </div>
+                <span class="navbar-text" id="igralecNameSurname">
+                    <!-- Ime in priimek trenerja -->
+                </span>
             </div>
         </div>
     </nav>
@@ -142,7 +129,10 @@
         document.addEventListener('DOMContentLoaded', function () {
             displayIgralecDetails();
         });
-
+        igralecIme = localStorage.getItem('igralecIme');
+        igralecPriimek = localStorage.getItem('igralecPriimek');
+        igralecNameSurname = document.getElementById('igralecNameSurname');
+        igralecNameSurname.textContent = `${igralecIme} ${igralecPriimek}`;
         function displayIgralecDetails() {
             const igralecId = localStorage.getItem('igralecId');
 
