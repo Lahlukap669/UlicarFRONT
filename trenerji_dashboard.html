@@ -76,6 +76,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="lestvica.html">Lestvica</a>
                     </li>
+                    <li class="nav-item" id="admin">
+                        
+                    </li>
                 </ul>
                 <div class="dropdown">
                     <span class="navbar-text dropdown-toggle" id="trainerNameSurname" data-bs-toggle="dropdown" aria-expanded="false">
@@ -110,7 +113,9 @@
                 window.location.href = 'trenerji_login.html';
                 return;
             }
-
+            if (trainerId == 1) {
+                document.getElementById('admin').innerHTML = '<a class="nav-link" href="admin_board.html">Admin</a>';
+            }
             fetchTrainerDetails(trainerId);
             fetchAllChallenges();
         });
