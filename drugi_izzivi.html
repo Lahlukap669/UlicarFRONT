@@ -89,7 +89,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Drugi Izzivi</a>
+                        <a class="nav-link" href="igralci_dashboard.html">Izzivi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="drugi_izzivi.html">Drugi Izzivi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="lestvica_i.html">Lestvica</a>
                     </li>
                 </ul>
                 <div class="dropdown">
@@ -97,7 +103,7 @@
                         <!-- Ime in priimek igralca bo tukaj -->
                     </span>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="igralecNameSurname">
-                        <li><a class="dropdown-item" href="#" onclick="editProfile()">Uredi Profil</a></li>
+                        <li><a class="dropdown-item" href="uredi_profil_i.html" onclick="editProfile()">Uredi Profil</a></li>
                         <li><a class="dropdown-item" href="#" onclick="logout()">Odjava</a></li>
                     </ul>
                 </div>
@@ -175,25 +181,47 @@
                     drugiIzziviCards.innerHTML = ''; // Clear previous cards
 
                     if (data.drugi_izzivi && data.drugi_izzivi.length > 0) {
-                        data.drugi_izzivi.forEach(drugi_izziv => {
-                            const cardDiv = document.createElement('div');
-                            cardDiv.className = 'col-md-6';  // Column for responsive design
-                            cardDiv.innerHTML = `
-                                <div class="card mb-3">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Ime:</h5>
-                                        <input type="text" class="form-control" id="ime_${drugi_izziv.id}" value="${drugi_izziv.ime}" />
-                                        <p class="card-text">Status: ${drugi_izziv.status}</p>
-                                        <p class="card-text">Točke: ${drugi_izziv.tocke}</p>
-                                        <div class="d-flex justify-content-between">
-                                            <button class="btn btn-warning" onclick="updateDrugiIzziv(${drugi_izziv.id})">Spremeni</button>
-                                            <button class="btn btn-danger" onclick="deleteDrugiIzziv(${drugi_izziv.id})">Izbriši</button>
+                        // Fetch additional details for all drugi izziv simultaneously
+                        const promises = data.drugi_izzivi.map(drugi_izziv =>
+                            fetch(`http://127.0.0.1:5000/get_drugi_izziv_igralec_by_drugi_izziv_id`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ drugi_izziv_id: drugi_izziv.id }),
+                            }).then(response => response.json())
+                        );
+
+                        // Once all promises are resolved, process data
+                        Promise.all(promises)
+                        .then(results => {
+                            results.forEach((izzivData, index) => {
+                                if (izzivData.success) {
+                                    const izziv = izzivData.drugi_izzivi_igralci[0];  // Assuming there's only one result per drugi izziv
+                                    const drugiIzziv = data.drugi_izzivi[index];
+
+                                    const cardDiv = document.createElement('div');
+                                    cardDiv.className = 'col-md-6';  // Column for responsive design
+                                    cardDiv.innerHTML = `
+                                        <div class="card mb-3">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Ime:</h5>
+                                                <input type="text" class="form-control" id="ime_${drugiIzziv.id}" value="${drugiIzziv.ime}" />
+                                                <p class="card-text">Status: ${izziv.approved ? 'Approved' : 'Pending'}</p>
+                                                <p class="card-text">Točke: ${izziv.tocke || 'N/A'}</p>
+                                                <div class="d-flex justify-content-between">
+                                                    <button class="btn btn-warning" onclick="updateDrugiIzziv(${drugiIzziv.id}, ${izziv.drugi_izziv_igralec_id})">Spremeni</button>
+                                                    <button class="btn btn-danger" onclick="deleteDrugiIzziv(${drugiIzziv.id})">Izbriši</button>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            `;
-                            drugiIzziviCards.appendChild(cardDiv);
-                        });
+                                    `;
+                                    drugiIzziviCards.appendChild(cardDiv);
+                                } else {
+                                    console.error('Error fetching details from Drugi Izzivi Igralci:', izzivData.message);
+                                }
+                            });
+                        }).catch(error => console.error('Error fetching drugi izziv igralec details:', error));
                     } else {
                         const noDataDiv = document.createElement('div');
                         noDataDiv.className = 'col-md-12';
@@ -206,6 +234,7 @@
                 console.error('Igralec ID not found in local storage.');
             }
         }
+
 
         function createDrugiIzziv() {
             const ime = document.getElementById('imeInput').value;

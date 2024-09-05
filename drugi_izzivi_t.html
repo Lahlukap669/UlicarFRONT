@@ -137,6 +137,14 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const trainerId = localStorage.getItem('trainerId');
+            if (!trainerId) {
+                // If not logged in, redirect to login page
+                window.location.href = 'trenerji_login.html';
+                return;
+            }
+
+            fetchTrainerDetails(trainerId);
             fetchDrugiIzziviForTrener();
         });
 
@@ -184,7 +192,7 @@
                         .catch(error => console.error('Napaka pri pridobivanju igralca:', error));
                 });
             } else {
-                unapprovedList.innerHTML = '<p class="text-center">Ni nepodprtih izzivov.</p>';
+                unapprovedList.innerHTML = '<p class="text-center">Ni nepotrjenih izzivov.</p>';
             }
         }
 
@@ -213,7 +221,10 @@
                 approvedList.innerHTML = '<p class="text-center">Ni potrjenih izzivov.</p>';
             }
         }
-
+        function editProfile() {
+            // Redirect to profile edit page or show a modal
+            window.location.href = './uredi_profil.html'; // Example redirection
+        }
         function fetchIgralecDetails(igralecId) {
             return fetch(`http://127.0.0.1:5000/get_igralec_by_id`, {
                 method: 'POST',
@@ -266,6 +277,33 @@
                 }
             })
             .catch(error => console.error('Napaka pri potrjevanju izziva:', error));
+        }
+        function fetchTrainerDetails(trainerId) {
+            fetch(`http://127.0.0.1:5000/get_trener_by_id`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ trener_id: trainerId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const trainer = data.trener;
+                    const trainerNameSurname = document.getElementById('trainerNameSurname');
+                    trainerNameSurname.textContent = `${trainer.ime} ${trainer.priimek}`;
+                } else {
+                    console.error('Error fetching trainer details:', data.message);
+                }
+            })
+            .catch(error => console.error('Error fetching trainer details:', error));
+        }
+        function logout() {
+            // Clear local storage and redirect to login page
+            localStorage.removeItem('trainerId');
+            localStorage.removeItem('trainerName');
+            localStorage.removeItem('trainerSurname');
+            window.location.href = 'trenerji_login.html';
         }
     </script>
 </body>
