@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drugi Izzivi - Trener</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e0f7fa;
+            color: #00796b;
+        }
+
+        .navbar {
+            background-color: #00796b;
+        }
+
+        .navbar a {
+            color: #ffffff !important;
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+
+        .navbar a:hover {
+            color: #00796b !important;
+            background-color: #ffffff !important;
+            border-radius: 5px;
+        }
+
+        .container {
+            margin-top: 20px;
+        }
+
+        .navbar-text {
+            margin-right: 20px;
+            cursor: pointer;
+        }
+
+        .btn-custom {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background-color: #218838;
+        }
+        
+        .navbar a.active {
+            background-color: #ffffff !important;
+            color: #00796b !important;
+            border-radius: 5px;
+        }
+        
+        .dropdown-menu {
+            right: 0;
+            left: auto;
+            background-color: #00796b; /* Temno zelena za ozadje dropdown menija */
+        }
+        
+        .dropdown-item {
+            color: #ffffff !important; /* Bela za besedilo dropdown itemov */
+        }
+        
+        .dropdown-item:hover {
+            background-color: #004d40 !important; /* Temnejša zelena ob hoverju */
+            color: #ffffff !important; /* Ohranimo belo besedilo ob hoverju */
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="trenerji_dashboard.html">Trenerji Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="approve_registration.html">Sprejemanje Igralcev</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="izzivi.html">Izzivi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="drugi_izzivi_t.html">Drugi Izzivi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="moji_igralci.html">Moji Igralci</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="lestvica.html">Lestvica</a>
+                    </li>
+                </ul>
+                <div class="dropdown">
+                    <span class="navbar-text dropdown-toggle" id="trainerNameSurname" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- Ime in priimek trenerja bo tukaj -->
+                    </span>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="trainerNameSurname">
+                        <li><a class="dropdown-item" href="#" onclick="editProfile()">Uredi Profil</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()">Odjava</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h3 class="text-center">Pregled Drugih Izzivov</h3>
+
+        <!-- Section for Unapproved Drugi Izzivi -->
+        <div class="card">
+            <div class="card-header">Nepotrjeni Izzivi</div>
+            <div class="card-body" id="unapprovedDrugiIzziviList">
+                <!-- Unapproved Drugi Izzivi will be appended here dynamically -->
+            </div>
+        </div>
+
+        <!-- Section for Last 5 Approved Drugi Izzivi -->
+        <div class="card">
+            <div class="card-header">Zadnjih 5 Potrjenih Izzivov</div>
+            <div class="card-body" id="approvedDrugiIzziviList">
+                <!-- Approved Drugi Izzivi will be appended here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchDrugiIzziviForTrener();
+        });
+
+        function fetchDrugiIzziviForTrener() {
+            const trenerId = localStorage.getItem('trainerId');
+
+            fetch(`http://127.0.0.1:5000/get_drugi_izzivi_for_trener`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ trener_id: trenerId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayUnapprovedDrugiIzzivi(data.unapproved);
+                    displayApprovedDrugiIzzivi(data.approved);
+                }
+            })
+            .catch(error => console.error('Napaka pri pridobivanju izzivov:', error));
+        }
+
+        function displayUnapprovedDrugiIzzivi(unapprovedIzzivi) {
+            const unapprovedList = document.getElementById('unapprovedDrugiIzziviList');
+            unapprovedList.innerHTML = '';
+
+            if (unapprovedIzzivi.length > 0) {
+                unapprovedIzzivi.forEach(izziv => {
+                    fetchIgralecDetails(izziv.igralec_id)
+                        .then(igralec => {
+                            const cardDiv = document.createElement('div');
+                            cardDiv.className = 'card mb-3';
+                            cardDiv.innerHTML = `
+                                <div class="card-body">
+                                    <h5 class="card-title">${izziv.ime}</h5>
+                                    <p class="card-text"><strong>Igralec:</strong> ${igralec.ime} ${igralec.priimek}</p>
+                                    <p class="card-text"><strong>Potrjeno:</strong> ${izziv.approved ? 'Da' : 'Ne'}</p>
+                                    <input type="number" class="form-control mb-2" id="tocke_${izziv.drugi_izziv_igralec_id}" placeholder="Vnesite točke">
+                                    <button class="btn btn-success" onclick="approveDrugiIzziv(${izziv.drugi_izziv_igralec_id}, ${izziv.drug_izziv_id}, ${izziv.igralec_id})">Potrdi</button>
+                                </div>
+                            `;
+                            unapprovedList.appendChild(cardDiv);
+                        })
+                        .catch(error => console.error('Napaka pri pridobivanju igralca:', error));
+                });
+            } else {
+                unapprovedList.innerHTML = '<p class="text-center">Ni nepodprtih izzivov.</p>';
+            }
+        }
+
+        function displayApprovedDrugiIzzivi(approvedIzzivi) {
+            const approvedList = document.getElementById('approvedDrugiIzziviList');
+            approvedList.innerHTML = '';
+
+            if (approvedIzzivi.length > 0) {
+                approvedIzzivi.forEach(izziv => {
+                    fetchIgralecDetails(izziv.igralec_id)
+                        .then(igralec => {
+                            const cardDiv = document.createElement('div');
+                            cardDiv.className = 'card mb-3';
+                            cardDiv.innerHTML = `
+                                <div class="card-body">
+                                    <h5 class="card-title">${izziv.ime}</h5>
+                                    <p class="card-text"><strong>Igralec:</strong> ${igralec.ime} ${igralec.priimek}</p>
+                                    <p class="card-text"><strong>Točke:</strong> ${izziv.tocke || 'N/A'}</p>
+                                </div>
+                            `;
+                            approvedList.appendChild(cardDiv);
+                        })
+                        .catch(error => console.error('Napaka pri pridobivanju igralca:', error));
+                });
+            } else {
+                approvedList.innerHTML = '<p class="text-center">Ni potrjenih izzivov.</p>';
+            }
+        }
+
+        function fetchIgralecDetails(igralecId) {
+            return fetch(`http://127.0.0.1:5000/get_igralec_by_id`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ igralec_id: igralecId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    return data.igralec;
+                } else {
+                    throw new Error('Napaka pri pridobivanju igralca.');
+                }
+            });
+        }
+
+        function approveDrugiIzziv(drugiIzzivIgralecId, drugIzzivId, igralecId) {
+            const tockeInput = document.getElementById(`tocke_${drugiIzzivIgralecId}`).value;
+            if (!tockeInput || isNaN(tockeInput)) {
+                alert('Prosim vnesite veljavno število točk.');
+                return;
+            }
+
+            const trenerId = localStorage.getItem('trainerId');
+
+            fetch(`http://127.0.0.1:5000/update_drugi_izziv_igralec`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    drugi_izziv_igralec_id: drugiIzzivIgralecId,
+                    drug_izziv_id: drugIzzivId,
+                    igralec_id: igralecId,
+                    trener_id: trenerId,
+                    tocke: tockeInput,
+                    approved: true // Setting approved to true when the coach approves it
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Izziv uspešno potrjen!');
+                    // Refresh the list of challenges
+                    fetchDrugiIzziviForTrener();
+                } else {
+                    alert('Napaka pri potrjevanju izziva.');
+                }
+            })
+            .catch(error => console.error('Napaka pri potrjevanju izziva:', error));
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drugi Izzivi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e0f7fa;
+            color: #007bff;
+        }
+
+        .navbar {
+            background-color: #007bff;
+        }
+
+        .navbar a {
+            color: #ffffff !important;
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+
+        .navbar a:hover {
+            color: #007bff !important;
+            background-color: #ffffff !important;
+            border-radius: 5px;
+        }
+
+        .container {
+            margin-top: 20px;
+        }
+
+        .card-container {
+            margin-top: 40px;
+            padding: 0 15px;
+        }
+
+        .navbar-text {
+            margin-right: 20px;
+            cursor: pointer;
+        }
+
+        .btn-custom {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background-color: #218838;
+        }
+
+        .navbar a.active {
+            background-color: #ffffff !important;
+            color: #007bff !important;
+            border-radius: 5px;
+        }
+
+        .dropdown-menu {
+            right: 0;
+            left: auto;
+            background-color: #007bff;
+        }
+
+        .dropdown-item {
+            color: #ffffff !important;
+        }
+
+        .dropdown-item:hover {
+            background-color: #0056b3 !important;
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="igralci_dashboard.html">Igralci Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Drugi Izzivi</a>
+                    </li>
+                </ul>
+                <div class="dropdown">
+                    <span class="navbar-text dropdown-toggle" id="igralecNameSurname" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- Ime in priimek igralca bo tukaj -->
+                    </span>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="igralecNameSurname">
+                        <li><a class="dropdown-item" href="#" onclick="editProfile()">Uredi Profil</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()">Odjava</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h3 class="text-center">Moji Drugi Izzivi</h3>
+        <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#createIzzivModal">Dodaj Drug Izziv</button>
+        <div id="drugiIzziviCards" class="card-container row mt-3">
+            <!-- Cards will be dynamically added here -->
+        </div>
+    </div>
+
+    <!-- Modal for Adding New Drugi Izziv -->
+    <div class="modal fade" id="createIzzivModal" tabindex="-1" aria-labelledby="createIzzivModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createIzzivModalLabel">Dodaj Drug Izziv</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="imeInput">Ime:</label>
+                        <input type="text" class="form-control" id="imeInput" placeholder="Vnesite ime izziva" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zapri</button>
+                    <button type="button" class="btn btn-primary" onclick="createDrugiIzziv()">Shrani</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            displayIgralecName();
+            fetchDrugiIzzivi();
+        });
+
+        function displayIgralecName() {
+            const igralecIme = localStorage.getItem('igralecIme');
+            const igralecPriimek = localStorage.getItem('igralecPriimek');
+
+            if (igralecIme && igralecPriimek) {
+                const igralecNameSurname = document.getElementById('igralecNameSurname');
+                igralecNameSurname.textContent = `${igralecIme} ${igralecPriimek}`;
+            } else {
+                console.error('Ime or priimek igralca not found in local storage.');
+            }
+        }
+
+        function fetchDrugiIzzivi() {
+            const igralecId = localStorage.getItem('igralecId');
+
+            if (igralecId) {
+                fetch('http://127.0.0.1:5000/get_all_drugi_izzivi_by_igralec_id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ igralec_id: igralecId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const drugiIzziviCards = document.getElementById('drugiIzziviCards');
+                    drugiIzziviCards.innerHTML = ''; // Clear previous cards
+
+                    if (data.drugi_izzivi && data.drugi_izzivi.length > 0) {
+                        data.drugi_izzivi.forEach(drugi_izziv => {
+                            const cardDiv = document.createElement('div');
+                            cardDiv.className = 'col-md-6';  // Column for responsive design
+                            cardDiv.innerHTML = `
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Ime:</h5>
+                                        <input type="text" class="form-control" id="ime_${drugi_izziv.id}" value="${drugi_izziv.ime}" />
+                                        <p class="card-text">Status: ${drugi_izziv.status}</p>
+                                        <p class="card-text">Točke: ${drugi_izziv.tocke}</p>
+                                        <div class="d-flex justify-content-between">
+                                            <button class="btn btn-warning" onclick="updateDrugiIzziv(${drugi_izziv.id})">Spremeni</button>
+                                            <button class="btn btn-danger" onclick="deleteDrugiIzziv(${drugi_izziv.id})">Izbriši</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            drugiIzziviCards.appendChild(cardDiv);
+                        });
+                    } else {
+                        const noDataDiv = document.createElement('div');
+                        noDataDiv.className = 'col-md-12';
+                        noDataDiv.innerHTML = '<p class="text-center">Ni drugih izzivov za prikaz.</p>';
+                        drugiIzziviCards.appendChild(noDataDiv);
+                    }
+                })
+                .catch(error => console.error('Error fetching drugi izzivi:', error));
+            } else {
+                console.error('Igralec ID not found in local storage.');
+            }
+        }
+
+        function createDrugiIzziv() {
+            const ime = document.getElementById('imeInput').value;
+            const igralecId = localStorage.getItem('igralecId');
+
+            if (!ime) {
+                alert('Prosim, izpolnite ime izziva.');
+                return;
+            }
+
+            // Step 1: Create the Drugi Izziv
+            fetch('http://127.0.0.1:5000/create_drugi_izziv', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ime: ime,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const drugiIzzivId = data.drugi_izziv_id; // Get the created Drugi Izziv ID
+
+                    // Step 2: Associate Drugi Izziv with Igralec and Trener (assuming trener_id is 0 for now)
+                    return fetch('http://127.0.0.1:5000/create_drugi_izziv_igralec', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            drug_izziv_id: drugiIzzivId,
+                            igralec_id: igralecId
+                        }),
+                    });
+                } else {
+                    throw new Error('Napaka pri dodajanju drugega izziva.');
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const drugiIzzivIgralecId = data.drugi_izziv_igralec_id; // Retrieve the ID                    
+                    // Clear modal form
+                    document.getElementById('imeInput').value = '';
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createIzzivModal'));
+                    modal.hide();
+                    // Refresh the list of challenges
+                    fetchDrugiIzzivi();
+                } else {
+                    alert('Napaka pri dodajanju izziva za igralca.');
+                }
+            })
+            .catch(error => console.error('Error creating drugi izziv:', error));
+        }
+
+
+        function updateDrugiIzziv(drugiIzzivId) {
+            const ime = document.getElementById(`ime_${drugiIzzivId}`).value;
+
+            if (!ime) {
+                alert('Ime izziva ne sme biti prazno.');
+                return;
+            }
+
+            fetch('http://127.0.0.1:5000/update_drugi_izziv', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    drugi_izziv_id: drugiIzzivId,
+                    ime: ime
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    fetchDrugiIzzivi(); // Refresh the list
+                } else {
+                    alert('Napaka pri posodabljanju imena drugega izziva.');
+                }
+            })
+            .catch(error => console.error('Error updating drugi izziv:', error));
+        }
+
+        function deleteDrugiIzziv(drugiIzzivId) {
+            if (confirm('Ali ste prepričani, da želite izbrisati ta drugi izziv?')) {
+                fetch('http://127.0.0.1:5000/delete_drugi_izziv', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ drugi_izziv_id: drugiIzzivId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        fetchDrugiIzzivi(); // Refresh the list
+                    } else {
+                        alert('Napaka pri brisanju drugega izziva.');
+                    }
+                })
+                .catch(error => console.error('Error deleting drugi izziv:', error));
+            }
+        }
+
+        function editProfile() {
+            // Redirect to profile edit page or show a modal
+            window.location.href = 'uredi_profil_i.html'; // Example redirection
+        }
+
+        function logout() {
+            // Clear local storage and redirect to login page
+            localStorage.removeItem('igralecId');
+            localStorage.removeItem('igralecIme');
+            localStorage.removeItem('igralecPriimek');
+            localStorage.removeItem('igralecUsername');
+            localStorage.removeItem('igralecTel');
+            localStorage.removeItem('igralecScore');
+            localStorage.removeItem('selectedSelekcijaId');
+            window.location.href = 'igralci_login.html';
+        }
+    </script>
+</body>
+</html>
