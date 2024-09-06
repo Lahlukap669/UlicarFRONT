@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Board - Trenerji Selekcije</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e0f7fa;
+            color: #00796b;
+        }
+        .navbar {
+            background-color: #00796b;
+        }
+        .navbar a {
+            color: #ffffff !important;
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+        .navbar a:hover {
+            color: #00796b !important;
+            background-color: #ffffff !important;
+            border-radius: 5px;
+        }
+        .btn-primary {
+            background-color: #00897b;
+            border-color: #00897b;
+        }
+        .btn-primary:hover {
+            background-color: #00695c;
+            border-color: #00695c;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .card-container {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="admin_board.html">Admin board</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="trenerji_selekcije.html">Trenerji Selekcije</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Container for Trenerji Selekcije -->
+    <div class="container">
+        <h3 class="text-center">Trenerji Selekcije</h3>
+
+        <!-- Add new Trener Selekcija button -->
+        <div class="text-end mb-3">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTrenerSelekcijaModal">Dodaj Trenerja k Selekciji</button>
+        </div>
+
+        <!-- Container to display trenerji_selekcije cards -->
+        <div id="trenerjiSelekcijeCards" class="row">
+            <!-- Trenerji Selekcije cards will be dynamically injected here -->
+        </div>
+    </div>
+
+    <!-- Modal for adding a new Trener Selekcija -->
+    <div class="modal fade" id="addTrenerSelekcijaModal" tabindex="-1" aria-labelledby="addTrenerSelekcijaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTrenerSelekcijaModalLabel">Dodaj Trenerja k Selekciji</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="klubSelect" class="form-label">Izberite klub:</label>
+                        <select id="klubSelect" class="form-select" onchange="fetchSelekcije()">
+                            <option selected disabled>Izberite klub...</option>
+                            <!-- Klub options will be dynamically injected here -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="selekcijaSelect" class="form-label">Izberite selekcijo:</label>
+                        <select id="selekcijaSelect" class="form-select">
+                            <option selected disabled>Izberite selekcijo...</option>
+                            <!-- Selekcija options will be dynamically injected here -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="trenerSelect" class="form-label">Izberite trenerja:</label>
+                        <select id="trenerSelect" class="form-select">
+                            <option selected disabled>Izberite trenerja...</option>
+                            <!-- Trenerji options will be dynamically injected here -->
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="addTrenerSelekcija()">Dodaj</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Fetch and display all trenerji_selekcije when the page loads
+            fetchTrenerjiSelekcije();
+
+            // Fetch all klubi when the modal opens
+            fetchKlubi();
+
+            // Fetch all trenerji for the modal
+            fetchTrenerji();
+        });
+
+        // Fetch all klubi and populate the klub select dropdown
+        function fetchKlubi() {
+            fetch('http://127.0.0.1:5000/get_all_klubi')
+                .then(response => response.json())
+                .then(data => {
+                    const klubSelect = document.getElementById('klubSelect');
+                    if (data.success && data.klubi.length > 0) {
+                        data.klubi.forEach(klub => {
+                            const option = document.createElement('option');
+                            option.value = klub.id;
+                            option.textContent = klub.ime;
+                            klubSelect.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching klubi:', error));
+        }
+
+        // Fetch selekcije based on selected klub and populate the selekcija dropdown
+        function fetchSelekcije() {
+            const klubId = document.getElementById('klubSelect').value;
+            
+            fetch('http://127.0.0.1:5000/get_selekcije_by_klub_id', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ klub_id: klubId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const selekcijaSelect = document.getElementById('selekcijaSelect');
+                selekcijaSelect.innerHTML = '<option selected disabled>Izberite selekcijo...</option>'; // Clear previous options
+
+                // Check for the 'selekcije' array in the response, not 'data'
+                if (data.selekcije && data.selekcije.length > 0) {
+                    data.selekcije.forEach(selekcija => {
+                        const option = document.createElement('option');
+                        option.value = selekcija.id;
+                        option.textContent = selekcija.selekcija;
+                        selekcijaSelect.appendChild(option);
+                    });
+                } else {
+                    selekcijaSelect.innerHTML = '<option selected disabled>No selections available</option>';
+                }
+            })
+            .catch(error => console.error('Error fetching selekcije:', error));
+        }
+
+
+        // Fetch all trenerji and populate the trener select dropdown
+        function fetchTrenerji() {
+            fetch('http://127.0.0.1:5000/get_all_trenerji')
+                .then(response => response.json())
+                .then(data => {
+                    const trenerSelect = document.getElementById('trenerSelect');
+                    if (data.success && data.trenerji.length > 0) {
+                        data.trenerji.forEach(trener => {
+                            const option = document.createElement('option');
+                            option.value = trener.id;
+                            option.textContent = `${trener.ime} ${trener.priimek}`;
+                            trenerSelect.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching trenerji:', error));
+        }
+
+        // Fetch and display all trenerji_selekcije
+        function fetchTrenerjiSelekcije() {
+            fetch('http://127.0.0.1:5000/get_all_trenerji_selekcije')
+                .then(response => response.json())
+                .then(data => {
+                    const trenerjiSelekcijeCards = document.getElementById('trenerjiSelekcijeCards');
+                    trenerjiSelekcijeCards.innerHTML = ''; // Clear previous content
+
+                    if (data.success && data.trenerji_selekcije.length > 0) {
+                        data.trenerji_selekcije.forEach(trener_selekcija => {
+                            // Fetch selekcija and trener names for display
+                            fetchSelekcijaAndTrener(trener_selekcija.selekcija_id, trener_selekcija.trener_id, trener_selekcija.id);
+                        });
+                    } else {
+                        trenerjiSelekcijeCards.innerHTML = '<p class="text-center">Ni trenerji selekcij za prikaz.</p>';
+                    }
+                })
+                .catch(error => console.error('Error fetching trenerji_selekcije:', error));
+        }
+
+        // Fetch selekcija and trener details by ID and append the card to the page
+        function fetchSelekcijaAndTrener(selekcija_id, trener_id, trener_selekcija_id) {
+            // Fetch Selekcija by ID
+            fetch('http://127.0.0.1:5000/get_selekcija_by_id', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ selekcija_id: selekcija_id })
+            })
+            .then(response => response.json())
+            .then(selekcijaData => {
+                if (selekcijaData.success) {
+                    const selekcijaName = selekcijaData.selekcija.selekcija;
+                    
+                    // Fetch Trener by ID
+                    fetch('http://127.0.0.1:5000/get_trener_by_id', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ trener_id: trener_id })
+                    })
+                    .then(response => response.json())
+                    .then(trenerData => {
+                        if (trenerData.success) {
+                            const trenerName = `${trenerData.trener.ime} ${trenerData.trener.priimek}`;
+
+                            // Create and append the card
+                            const trenerjiSelekcijeCards = document.getElementById('trenerjiSelekcijeCards');
+                            const card = document.createElement('div');
+                            card.className = 'col-md-4 mb-3';
+                            card.innerHTML = `
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Selekcija: ${selekcijaName}</h5>
+                                        <p class="card-text">Trener: ${trenerName}</p>
+                                        <button class="btn btn-danger" onclick="deleteTrenerSelekcija(${trener_selekcija_id})">Izbriši</button>
+                                    </div>
+                                </div>
+                            `;
+                            trenerjiSelekcijeCards.appendChild(card);
+                        } else {
+                            console.error('Error fetching trener details:', trenerData.message);
+                        }
+                    })
+                    .catch(error => console.error('Error fetching trener:', error));
+                } else {
+                    console.error('Error fetching selekcija details:', selekcijaData.message);
+                }
+            })
+            .catch(error => console.error('Error fetching selekcija:', error));
+        }
+
+        // Add new trener selekcija
+        function addTrenerSelekcija() {
+            const selekcijaId = document.getElementById('selekcijaSelect').value;
+            const trenerId = document.getElementById('trenerSelect').value;
+
+            if (!selekcijaId || !trenerId) {
+                alert('Prosim izberite selekcijo in trenerja.');
+                return;
+            }
+
+            fetch('http://127.0.0.1:5000/create_trener_selekcija', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ selekcija_id: selekcijaId, trener_id: trenerId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close the modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addTrenerSelekcijaModal'));
+                    modal.hide();
+
+                    // Refresh trenerji_selekcije list
+                    fetchTrenerjiSelekcije();
+                } else {
+                    alert('Povezave ni mogoče ustvariti. Lahko, da že obstaja.');
+                }
+            })
+            .catch(error => console.error('Error creating trener_selekcija:', error));
+        }
+
+        // Delete trener selekcija
+        function deleteTrenerSelekcija(trener_selekcija_id) {
+            if (confirm('Ali ste prepričani, da želite izbrisati to povezavo med trenerjem in selekcijo?')) {
+                fetch('http://127.0.0.1:5000/delete_trener_selekcija', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ trener_selekcija_id: trener_selekcija_id })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Refresh trenerji_selekcije list
+                        fetchTrenerjiSelekcije();
+                    } else {
+                        console.error('Error deleting trener_selekcija:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error deleting trener_selekcija:', error));
+            }
+        }
+    </script>
+</body>
+</html>

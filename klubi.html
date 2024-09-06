@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Board - Klubi</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e0f7fa;
+            color: #00796b;
+        }
+        .navbar {
+            background-color: #00796b;
+        }
+        .navbar a {
+            color: #ffffff !important;
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+        .navbar a:hover {
+            color: #00796b !important;
+            background-color: #ffffff !important;
+            border-radius: 5px;
+        }
+        .btn-primary {
+            background-color: #00897b;
+            border-color: #00897b;
+        }
+        .btn-primary:hover {
+            background-color: #00695c;
+            border-color: #00695c;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .card-container {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="admin_board.html">Admin board</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="klubi.html">Klubi</a>
+                    </li>
+                    <!-- Add more menu items here -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Container for Klubi -->
+    <div class="container">
+        <h3 class="text-center">Klubi</h3>
+        <div class="text-end mb-3">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addKlubModal">Dodaj Klub</button>
+        </div>
+        <div id="klubiCards" class="row">
+            <!-- Klub cards will be injected here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Modal for adding new club -->
+    <div class="modal fade" id="addKlubModal" tabindex="-1" aria-labelledby="addKlubModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addKlubModalLabel">Dodaj Klub</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="imeKluba" class="form-label">Ime Kluba</label>
+                        <input type="text" class="form-control" id="imeKluba">
+                    </div>
+                    <button class="btn btn-primary" onclick="addKlub()">Dodaj</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Fetch and display all clubs when the page loads
+            fetchKlubi();
+        });
+
+        // Fetch all clubs from the server and display them in cards
+        function fetchKlubi() {
+            fetch('http://127.0.0.1:5000/get_all_klubi')
+                .then(response => response.json())
+                .then(data => {
+                    const klubiCards = document.getElementById('klubiCards');
+                    klubiCards.innerHTML = ''; // Clear previous content
+
+                    if (data.success && data.klubi.length > 0) {
+                        data.klubi.forEach(klub => {
+                            const card = document.createElement('div');
+                            card.className = 'col-md-4 mb-3';
+                            card.innerHTML = `
+                                <div class="card">
+                                    <div class="card-body">
+                                        <input type="text" class="form-control mb-2" id="klubName_${klub.id}" value="${klub.ime}">
+                                        <button class="btn btn-warning" onclick="updateKlub(${klub.id})">Spremeni</button>
+                                        <button class="btn btn-danger" onclick="deleteKlub(${klub.id})">Izbriši</button>
+                                    </div>
+                                </div>
+                            `;
+                            klubiCards.appendChild(card);
+                        });
+                    } else {
+                        klubiCards.innerHTML = '<p class="text-center">Ni klubov za prikaz.</p>';
+                    }
+                })
+                .catch(error => console.error('Error fetching klubi:', error));
+        }
+
+        // Add new klub via API
+        function addKlub() {
+            const imeKluba = document.getElementById('imeKluba').value;
+            if (!imeKluba) {
+                alert('Prosimo, vnesite ime kluba.');
+                return;
+            }
+
+            fetch('http://127.0.0.1:5000/create_klub', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ klub_ime: imeKluba })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    fetchKlubi(); // Refresh the list of clubs
+                    document.getElementById('imeKluba').value = ''; // Clear the input field
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addKlubModal'));
+                    modal.hide(); // Close the modal
+                } else {
+                    console.error('Error adding club:', data.error);
+                }
+            })
+            .catch(error => console.error('Error adding club:', error));
+        }
+
+        // Update klub via API
+        function updateKlub(klubId) {
+            const ime = document.getElementById(`klubName_${klubId}`).value;
+            fetch('http://127.0.0.1:5000/update_klub', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ klub_id: klubId, ime: ime })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    fetchKlubi(); // Refresh the list of clubs
+                } else {
+                    console.error('Error updating club:', data.error);
+                }
+            })
+            .catch(error => console.error('Error updating club:', error));
+        }
+
+        // Delete klub via API
+        function deleteKlub(klubId) {
+            if (confirm('Ali ste prepričani, da želite izbrisati ta klub?')) {
+                fetch('http://127.0.0.1:5000/delete_klub', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ klub_id: klubId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        fetchKlubi(); // Refresh the list of clubs
+                    } else {
+                        console.error('Error deleting club:', data.error);
+                    }
+                })
+                .catch(error => console.error('Error deleting club:', error));
+            }
+        }
+    </script>
+</body>
+</html>

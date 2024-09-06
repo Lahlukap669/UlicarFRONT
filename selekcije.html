@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Board - Selekcije</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e0f7fa;
+            color: #00796b;
+        }
+        .navbar {
+            background-color: #00796b;
+        }
+        .navbar a {
+            color: #ffffff !important;
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+        .navbar a:hover {
+            color: #00796b !important;
+            background-color: #ffffff !important;
+            border-radius: 5px;
+        }
+        .btn-primary {
+            background-color: #00897b;
+            border-color: #00897b;
+        }
+        .btn-primary:hover {
+            background-color: #00695c;
+            border-color: #00695c;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .card-container {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="admin_board.html">Admin board</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="selekcije.html">Selekcije</a>
+                    </li>
+                    <!-- Add more menu items here -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Container for Selekcije -->
+    <div class="container">
+        <h3 class="text-center">Selekcije</h3>
+
+        <!-- Klub selection dropdown -->
+        <div class="mb-3">
+            <label for="klubSelect" class="form-label">Izberite klub:</label>
+            <select id="klubSelect" class="form-select" onchange="fetchSelekcije()">
+                <!-- Klub options will be dynamically injected here -->
+            </select>
+        </div>
+
+        <!-- Add new Selekcija button -->
+        <div class="text-end mb-3">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSelekcijaModal">Dodaj Selekcijo</button>
+        </div>
+
+        <!-- Container to display selekcije cards -->
+        <div id="selekcijeCards" class="row">
+            <!-- Selekcije cards will be dynamically injected here -->
+        </div>
+    </div>
+
+    <!-- Modal for adding a new Selekcija -->
+    <div class="modal fade" id="addSelekcijaModal" tabindex="-1" aria-labelledby="addSelekcijaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSelekcijaModalLabel">Dodaj Selekcijo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="selekcijaIme" class="form-label">Ime Selekcije</label>
+                        <input type="text" class="form-control" id="selekcijaIme">
+                    </div>
+                    <div class="mb-3">
+                        <label for="selekcijaOpis" class="form-label">Opis Selekcije</label>
+                        <textarea class="form-control" id="selekcijaOpis"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="addSelekcija()">Dodaj</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Fetch and display all klubi when the page loads
+            fetchKlubi();
+        });
+
+        // Fetch all klubi and populate the klub select dropdown
+        function fetchKlubi() {
+            fetch('http://127.0.0.1:5000/get_all_klubi')
+                .then(response => response.json())
+                .then(data => {
+                    const klubSelect = document.getElementById('klubSelect');
+                    if (data.success && data.klubi.length > 0) {
+                        data.klubi.forEach(klub => {
+                            const option = document.createElement('option');
+                            option.value = klub.id;
+                            option.textContent = klub.ime;
+                            klubSelect.appendChild(option);
+                            
+                            if (klubSelect.options.length === 1) {
+                                fetchSelekcije();
+                            }
+                        });
+                    } else {
+                        console.error('No klubi found');
+                    }
+                })
+                .catch(error => console.error('Error fetching klubi:', error));
+        }
+
+        // Fetch selekcije based on selected klub
+        function fetchSelekcije() {
+            const klubId = document.getElementById('klubSelect').value;
+
+            if (!klubId) {
+                alert('Prosim, izberite klub.');
+                return;
+            }
+
+            fetch('http://127.0.0.1:5000/get_selekcije_by_klub_id', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ klub_id: klubId })  // Send klub_id in the body of the POST request
+            })
+            .then(response => response.json())
+            .then(data => {
+                const selekcijeCards = document.getElementById('selekcijeCards');
+                selekcijeCards.innerHTML = ''; // Clear previous selections
+                if (data.selekcije.length > 0) {
+                    data.selekcije.forEach(selekcija => {
+                        const card = document.createElement('div');
+                        card.className = 'col-md-4 mb-3';
+                        card.innerHTML = `
+                            <div class="card">
+                                <div class="card-body">
+                                    <input type="text" class="form-control mb-2" id="selekcijaIme_${selekcija.id}" value="${selekcija.selekcija}">
+                                    <textarea class="form-control mb-2" id="selekcijaOpis_${selekcija.id}">${selekcija.opis || ''}</textarea>
+                                    <button class="btn btn-warning" onclick="updateSelekcija(${selekcija.id})">Spremeni</button>
+                                    <button class="btn btn-danger" onclick="deleteSelekcija(${selekcija.id})">Izbriši</button>
+                                </div>
+                            </div>
+                        `;
+                        selekcijeCards.appendChild(card);
+                    });
+                } else {
+                    selekcijeCards.innerHTML = '<p class="text-center">Ni selekcij za prikaz.</p>';
+                }
+            })
+            .catch(error => console.error('Error fetching selekcije:', error));
+        }
+
+
+        // Add new selekcija
+        function addSelekcija() {
+            const klubId = document.getElementById('klubSelect').value;
+            const selekcijaIme = document.getElementById('selekcijaIme').value;
+            const selekcijaOpis = document.getElementById('selekcijaOpis').value;
+
+            if (!klubId || !selekcijaIme) {
+                alert('Prosim, izberite klub in vnesite ime selekcije.');
+                return;
+            }
+
+            fetch('http://127.0.0.1:5000/create_selekcija', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    klub_id: klubId,
+                    selekcija_ime: selekcijaIme,
+                    opis: selekcijaOpis
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    fetchSelekcije(); // Refresh the selekcije list
+                    document.getElementById('selekcijaIme').value = ''; // Clear inputs
+                    document.getElementById('selekcijaOpis').value = '';
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addSelekcijaModal'));
+                    modal.hide(); // Close modal
+                } else {
+                    console.error('Error creating selekcija:', data.error);
+                }
+            })
+            .catch(error => console.error('Error creating selekcija:', error));
+        }
+
+        // Update selekcija
+        function updateSelekcija(selekcijaId) {
+            const klubId = document.getElementById('klubSelect').value;
+            const selekcijaIme = document.getElementById(`selekcijaIme_${selekcijaId}`).value;
+            const selekcijaOpis = document.getElementById(`selekcijaOpis_${selekcijaId}`).value;
+
+            fetch('http://127.0.0.1:5000/update_selekcija', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    selekcija_id: selekcijaId,
+                    klub_id: klubId,
+                    selekcija: selekcijaIme,
+                    opis: selekcijaOpis
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    fetchSelekcije(); // Refresh the selekcije list
+                } else {
+                    console.error('Error updating selekcija:', data.error);
+                }
+            })
+            .catch(error => console.error('Error updating selekcija:', error));
+        }
+
+        // Delete selekcija
+        function deleteSelekcija(selekcijaId) {
+            if (confirm('Ali ste prepričani, da želite izbrisati to selekcijo?')) {
+                fetch('http://127.0.0.1:5000/delete_selekcija', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ selekcija_id: selekcijaId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        fetchSelekcije(); // Refresh the selekcije list
+                    } else {
+                        console.error('Error deleting selekcija:', data.error);
+                    }
+                })
+                .catch(error => console.error('Error deleting selekcija:', error));
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trenerji Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e0f7fa; /* Svetlo modra barva */
+            color: #00796b; /* Temno zelena za besedilo */
+        }
+        .navbar {
+            background-color: #00796b; /* Temno zelena za navbar */
+        }
+        .navbar a {
+            color: #ffffff !important; /* Bela za besedilo v navbarju */
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out; /* Animacija za hover */
+        }
+        .navbar a:hover {
+            color: #00796b !important; /* Temno zelena za hover */
+            background-color: #ffffff !important; /* Bela za ozadje ob hoverju */
+            border-radius: 5px; /* Rahlo zaobljeni robovi ob hoverju */
+        }
+        .btn-primary {
+            background-color: #00897b; /* Temno modra za gumbe */
+            border-color: #00897b;
+        }
+        .btn-primary:hover {
+            background-color: #00695c; /* Temnejša zelena ob hoverju */
+            border-color: #00695c;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .card-container {
+            margin-top: 30px; /* Povečan margin med naslovom in karticami */
+        }
+        .dropdown-menu {
+            right: 0;
+            left: auto;
+            background-color: #00796b; /* Temno zelena za ozadje dropdown menija */
+        }
+        .dropdown-item {
+            color: #ffffff !important; /* Bela za besedilo dropdown itemov */
+        }
+        .dropdown-item:hover {
+            background-color: #004d40 !important; /* Temnejša zelena ob hoverju */
+            color: #ffffff !important; /* Ohranimo belo besedilo ob hoverju */
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="admin_board.html">Admin board</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="klubi.html">Klubi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="selekcije.html">Selekcije</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="trenerji_selekcije.html">Trenerji in selekcije</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="s_trenerji.html">Sprejemanje trenerjev</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="trenerji_dashboard.html">Trenerji dashboard</a>
+                    </li>
+                </ul>
+                <div class="dropdown">
+                    <span class="navbar-text dropdown-toggle" id="trainerNameSurname" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- Ime in priimek trenerja bo tukaj -->
+                    </span>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="trainerNameSurname">
+                        <li><a class="dropdown-item" href="#" onclick="editProfile()">Uredi Profil</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()">Odjava</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Container for Challenges -->
+    <div class="container">
+        <h3 class="text-center">Dobrodošel na admin board!</h3>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if trainer is logged in
+            const trainerId = localStorage.getItem('trainerId');
+            if (!trainerId) {
+                // If not logged in, redirect to login page
+                window.location.href = 'trenerji_login.html';
+                return;
+            }
+            if (trainerId != 1) {
+                window.location.href = 'trenerji_dashboard.html';
+                return;
+            }
+            fetchTrainerDetails(trainerId);
+        });
+
+        function fetchTrainerDetails(trainerId) {
+            fetch(`http://127.0.0.1:5000/get_trener_by_id`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ trener_id: trainerId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const trainer = data.trener;
+                    const trainerNameSurname = document.getElementById('trainerNameSurname');
+                    trainerNameSurname.textContent = `${trainer.ime} ${trainer.priimek}`;
+                } else {
+                    console.error('Error fetching trainer details:', data.message);
+                }
+            })
+            .catch(error => console.error('Error fetching trainer details:', error));
+        }
+
+        function editProfile() {
+            // Redirect to profile edit page or show a modal
+            window.location.href = './uredi_profil.html'; // Example redirection
+        }
+
+        function logout() {
+            // Clear local storage and redirect to login page
+            localStorage.removeItem('trainerId');
+            localStorage.removeItem('trainerName');
+            localStorage.removeItem('trainerSurname');
+            window.location.href = 'trenerji_login.html';
+        }
+    </script>
+</body>
+</html>
