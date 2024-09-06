@@ -96,7 +96,7 @@
     const password = document.getElementById('password').value;
 
     // Send login request to the API
-    fetch('http://127.0.0.1:5000/login_trenerji', {
+    fetch('https://ulicar-api-5ee4765ac28b.herokuapp.com/login_trenerji', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -114,7 +114,7 @@
             localStorage.setItem('trainerId', trenerId);
 
             // Now fetch the trainer details
-            fetch(`http://127.0.0.1:5000/get_trener_by_id`, {
+            fetch(`https://ulicar-api-5ee4765ac28b.herokuapp.com/get_trener_by_id`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
