@@ -125,7 +125,7 @@
 
         // Fetch all klubi and populate the klub select dropdown
         function fetchKlubi() {
-            fetch('http://127.0.0.1:5000/get_all_klubi')
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_all_klubi')
                 .then(response => response.json())
                 .then(data => {
                     const klubSelect = document.getElementById('klubSelect');
@@ -145,7 +145,7 @@
         function fetchSelekcije() {
             const klubId = document.getElementById('klubSelect').value;
             
-            fetch('http://127.0.0.1:5000/get_selekcije_by_klub_id', {
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_selekcije_by_klub_id', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -175,7 +175,7 @@
 
         // Fetch all trenerji and populate the trener select dropdown
         function fetchTrenerji() {
-            fetch('http://127.0.0.1:5000/get_all_trenerji')
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_all_trenerji')
                 .then(response => response.json())
                 .then(data => {
                     const trenerSelect = document.getElementById('trenerSelect');
@@ -193,7 +193,7 @@
 
         // Fetch and display all trenerji_selekcije
         function fetchTrenerjiSelekcije() {
-            fetch('http://127.0.0.1:5000/get_all_trenerji_selekcije')
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_all_trenerji_selekcije')
                 .then(response => response.json())
                 .then(data => {
                     const trenerjiSelekcijeCards = document.getElementById('trenerjiSelekcijeCards');
@@ -214,7 +214,7 @@
         // Fetch selekcija and trener details by ID and append the card to the page
         function fetchSelekcijaAndTrener(selekcija_id, trener_id, trener_selekcija_id) {
             // Fetch Selekcija by ID
-            fetch('http://127.0.0.1:5000/get_selekcija_by_id', {
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_selekcija_by_id', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -227,7 +227,7 @@
                     const selekcijaName = selekcijaData.selekcija.selekcija;
                     
                     // Fetch Trener by ID
-                    fetch('http://127.0.0.1:5000/get_trener_by_id', {
+                    fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_trener_by_id', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -275,7 +275,7 @@
                 return;
             }
 
-            fetch('http://127.0.0.1:5000/create_trener_selekcija', {
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/create_trener_selekcija', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -301,7 +301,7 @@
         // Delete trener selekcija
         function deleteTrenerSelekcija(trener_selekcija_id) {
             if (confirm('Ali ste prepričani, da želite izbrisati to povezavo med trenerjem in selekcijo?')) {
-                fetch('http://127.0.0.1:5000/delete_trener_selekcija', {
+                fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/delete_trener_selekcija', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

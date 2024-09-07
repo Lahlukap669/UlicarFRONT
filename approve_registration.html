@@ -133,7 +133,7 @@
             const trainerId = localStorage.getItem('trainerId');
 
             if (trainerId) {
-                fetch(`http://127.0.0.1:5000/get_trener_by_id`, {
+                fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_trener_by_id`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -155,7 +155,7 @@
         }
 
         function fetchPendingRegistrations() {
-            fetch('http://127.0.0.1:5000/get_all_registracije_no', {
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_all_registracije_no', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -178,7 +178,7 @@
         }
 
         function fetchSelectionDetails(registration, registrationsList) {
-            fetch(`http://127.0.0.1:5000/get_selekcija_by_id`, {
+            fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_selekcija_by_id`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -208,7 +208,7 @@
         }
 
         function approveRegistration(registrationId) {
-            fetch('http://127.0.0.1:5000/approve_registration', {
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/approve_registration', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

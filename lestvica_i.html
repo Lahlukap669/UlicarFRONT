@@ -155,7 +155,7 @@
             const selekcijaId = localStorage.getItem('selectedSelekcijaId');
 
             if (selekcijaId) {
-                fetch('http://127.0.0.1:5000/get_selekcija_by_id', {
+                fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_selekcija_by_id', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -180,7 +180,7 @@
 
         function fetchSelekcije(klubId) {
             if (klubId) {
-                fetch('http://127.0.0.1:5000/get_all_selekcije_by_klub_id', {
+                fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_all_selekcije_by_klub_id', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -219,7 +219,7 @@
             const selekcijaId = document.getElementById('selekcijaSelect').value;
 
             if (selekcijaId) {
-                fetch('http://127.0.0.1:5000/get_leaderboard_by_selekcija', {
+                fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_leaderboard_by_selekcija', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

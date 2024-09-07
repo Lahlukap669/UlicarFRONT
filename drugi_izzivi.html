@@ -168,7 +168,7 @@
             const igralecId = localStorage.getItem('igralecId');
 
             if (igralecId) {
-                fetch('http://127.0.0.1:5000/get_all_drugi_izzivi_by_igralec_id', {
+                fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_all_drugi_izzivi_by_igralec_id', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -183,7 +183,7 @@
                     if (data.drugi_izzivi && data.drugi_izzivi.length > 0) {
                         // Fetch additional details for all drugi izziv simultaneously
                         const promises = data.drugi_izzivi.map(drugi_izziv =>
-                            fetch(`http://127.0.0.1:5000/get_drugi_izziv_igralec_by_drugi_izziv_id`, {
+                            fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_drugi_izziv_igralec_by_drugi_izziv_id`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -246,7 +246,7 @@
             }
 
             // Step 1: Create the Drugi Izziv
-            fetch('http://127.0.0.1:5000/create_drugi_izziv', {
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/create_drugi_izziv', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -261,7 +261,7 @@
                     const drugiIzzivId = data.drugi_izziv_id; // Get the created Drugi Izziv ID
 
                     // Step 2: Associate Drugi Izziv with Igralec and Trener (assuming trener_id is 0 for now)
-                    return fetch('http://127.0.0.1:5000/create_drugi_izziv_igralec', {
+                    return fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/create_drugi_izziv_igralec', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -302,7 +302,7 @@
                 return;
             }
 
-            fetch('http://127.0.0.1:5000/update_drugi_izziv', {
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/update_drugi_izziv', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -325,7 +325,7 @@
 
         function deleteDrugiIzziv(drugiIzzivId) {
             if (confirm('Ali ste prepričani, da želite izbrisati ta drugi izziv?')) {
-                fetch('http://127.0.0.1:5000/delete_drugi_izziv', {
+                fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/delete_drugi_izziv', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -188,7 +188,7 @@
             const izzivId = localStorage.getItem('selectedIzzivId');
 
             if (izzivId) {
-                fetch(`http://127.0.0.1:5000/get_all_izzivi_igralci_by_izziv_id`, {
+                fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_all_izzivi_igralci_by_izziv_id`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -206,7 +206,7 @@
                         izziviIgralciList.appendChild(rowDiv);
 
                         data.izzivi_igralci.forEach(izzivIgralec => {
-                            fetch(`http://127.0.0.1:5000/get_igralec_by_id`, {
+                            fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_igralec_by_id`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -254,7 +254,7 @@
             const selekcijaId = localStorage.getItem('selectedSelekcijaId');
 
             if (selekcijaId) {
-                fetch(`http://127.0.0.1:5000/get_all_igralci_by_selekcija_id`, {
+                fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_all_igralci_by_selekcija_id`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -296,7 +296,7 @@
             const test1 = document.getElementById('test1Input').value;
 
             if (trenerId && izzivId && igralecId && test1) {
-                fetch(`http://127.0.0.1:5000/create_izziv_igralec`, {
+                fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/create_izziv_igralec`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -332,7 +332,7 @@
             const fetchedIzzivIgralecId = document.getElementById(`izzivIgralecID_${izzivIgralecId}`).value; // Fetch the correct izziv_igralec_id
 
             if (igralecId && fetchedIzzivIgralecId) {
-                fetch(`http://127.0.0.1:5000/update_izziv_igralec`, {
+                fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/update_izziv_igralec`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -379,7 +379,7 @@
         }
         function izbrisiMeritve(izzivIgralecId) {
             if (confirm("Ste prepričani, da želite izbrisati te meritve?")) {
-                fetch(`http://127.0.0.1:5000/delete_izziv_igralec`, {
+                fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/delete_izziv_igralec`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

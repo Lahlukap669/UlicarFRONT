@@ -115,7 +115,7 @@
 
         // Fetch all klubi and populate the klub select dropdown
         function fetchKlubi() {
-            fetch('http://127.0.0.1:5000/get_all_klubi')
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_all_klubi')
                 .then(response => response.json())
                 .then(data => {
                     const klubSelect = document.getElementById('klubSelect');
@@ -146,7 +146,7 @@
                 return;
             }
 
-            fetch('http://127.0.0.1:5000/get_selekcije_by_klub_id', {
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_selekcije_by_klub_id', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -192,7 +192,7 @@
                 return;
             }
 
-            fetch('http://127.0.0.1:5000/create_selekcija', {
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/create_selekcija', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -224,7 +224,7 @@
             const selekcijaIme = document.getElementById(`selekcijaIme_${selekcijaId}`).value;
             const selekcijaOpis = document.getElementById(`selekcijaOpis_${selekcijaId}`).value;
 
-            fetch('http://127.0.0.1:5000/update_selekcija', {
+            fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/update_selekcija', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -250,7 +250,7 @@
         // Delete selekcija
         function deleteSelekcija(selekcijaId) {
             if (confirm('Ali ste prepričani, da želite izbrisati to selekcijo?')) {
-                fetch('http://127.0.0.1:5000/delete_selekcija', {
+                fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/delete_selekcija', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -205,7 +205,7 @@
             const trainerId = localStorage.getItem('trainerId');
 
             if (trainerId) {
-                fetch(`http://127.0.0.1:5000/get_trenerji_selekcije_by_trener_id`, {
+                fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_trenerji_selekcije_by_trener_id`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -221,7 +221,7 @@
                             if (data.trenerji_selekcije && data.trenerji_selekcije.length > 0) {
                                 data.trenerji_selekcije.forEach(selekcija => {
                                     // Fetch Selekcija details by ID
-                                    fetch(`http://127.0.0.1:5000/get_selekcija_by_id`, {
+                                    fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_selekcija_by_id`, {
                                         method: 'POST',
                                         headers: {
                                             'Content-Type': 'application/json',
@@ -262,7 +262,7 @@
             localStorage.setItem('selectedSelekcijaId', selekcijaId);
 
             if (selekcijaId) {
-                fetch(`http://127.0.0.1:5000/get_izzivi_by_selekcija_id`, {
+                fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_izzivi_by_selekcija_id`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -303,7 +303,7 @@
             const opis = document.getElementById(`izzivOpis_${izziviId}`).value;
             const tockovanje = document.getElementById(`izzivTockovanje_${izziviId}`).value;
 
-            fetch(`http://127.0.0.1:5000/update_izziv`, {
+            fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/update_izziv`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -347,7 +347,7 @@
             const selekcijaId = localStorage.getItem('selectedSelekcijaId');
 
             if (ime && opis && tockovanje && selekcijaId) {
-                fetch(`http://127.0.0.1:5000/create_izziv`, {
+                fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/create_izziv`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -388,7 +388,7 @@
         }
         function izbrisiIzziv(izzivId) {
             if (confirm("Ste prepričani, da želite izbrisati ta izziv?")) {
-                fetch(`http://127.0.0.1:5000/delete_izziv`, {
+                fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/delete_izziv`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

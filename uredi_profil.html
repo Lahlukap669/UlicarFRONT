@@ -109,7 +109,7 @@
             const trainerId = localStorage.getItem('trainerId');
 
             if (trainerId) {
-                fetch(`http://127.0.0.1:5000/get_trener_by_id`, {
+                fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_trener_by_id`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -160,7 +160,7 @@
                 dataToSend.geslo = geslo;
             }
 
-            fetch(`http://127.0.0.1:5000/update_trener`, {
+            fetch(`https://ulicar-api-b92eb0cb2a95.herokuapp.com/update_trener`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -124,7 +124,7 @@
 });
 
 function fetchKlubi() {
-    fetch('http://127.0.0.1:5000/get_all_klubi')
+    fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_all_klubi')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -150,7 +150,7 @@ function fetchKlubi() {
 }
 
 function fetchSelekcije(klubId) {
-    fetch('http://127.0.0.1:5000/get_selekcije_by_klub_id', {
+    fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/get_selekcije_by_klub_id', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -188,7 +188,7 @@ function fetchSelekcije(klubId) {
         const selekcijaId = document.getElementById('selekcija').value;
 
         // Send registration request to the API
-        fetch('http://127.0.0.1:5000/register', {
+        fetch('https://ulicar-api-b92eb0cb2a95.herokuapp.com/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
